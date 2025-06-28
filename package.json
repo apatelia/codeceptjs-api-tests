@@ -1,0 +1,35 @@
+{
+  "name": "codeceptjs-api-tests",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "test": "codeceptjs run --reporter=mocha-multi",
+    "users": "codeceptjs run tests/users.spec.ts --reporter=mocha-multi",
+    "bookings": "codeceptjs run tests/booking.spec.ts --reporter=mocha-multi",
+    "starwars": "codeceptjs run tests/starwars.spec.ts --reporter=mocha-multi",
+    "parallel": "codeceptjs run-workers --suites 2 && echo 'No HTML report generated for parallel runs.'",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@codeceptjs/configure": "^1.0.6",
+    "@eslint/js": "^9.30.0",
+    "@faker-js/faker": "^9.8.0",
+    "@stylistic/eslint-plugin": "^5.0.0",
+    "@types/node": "^24.0.7",
+    "codeceptjs": "^3.7.3",
+    "eslint": "^9.30.0",
+    "eslint-plugin-unused-imports": "^4.1.4",
+    "globals": "^16.2.0",
+    "husky": "^9.1.7",
+    "mocha-multi": "^1.1.7",
+    "mochawesome": "^7.1.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.35.0"
+  },
+  "dependencies": {
+    "dotenv": "^17.0.0"
+  }
+}
