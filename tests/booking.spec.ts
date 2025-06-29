@@ -55,12 +55,20 @@ Scenario('Create a new booking', async ({ I }) => {
 });
 
 Scenario('Get booking details', async ({ I }) => {
-  await I.sendGetRequest(`${host}/booking/${bookingId}`,
+  const response = await I.sendGetRequest(`${host}/booking/${bookingId}`,
     { 'Accept': 'application/json' }
   );
 
   I.seeResponseCodeIs(200);
-  I.seeResponseContainsJson({ firstname: 'Jim' });
+  I.seeResponseContainsJson({
+    firstname: 'Jim',
+    lastname: 'Brown',
+    totalprice: 111
+  });
+
+  const bookingDates = response.data.bookingdates;
+  I.assertMatchRegex(bookingDates.checkin, /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/);
+  I.assertMatchRegex(bookingDates.checkout, /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/);
 });
 
 Scenario('Delete booking', async ({ I }) => {

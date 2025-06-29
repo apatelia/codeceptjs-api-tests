@@ -1,6 +1,12 @@
 ## About
 
-This repository contains an automated test framework example for API Testing. The framework uses [codeceptjs](https://codecept.io/).
+This repository contains an automated test framework example for API Testing.
+
+The framework uses [codeceptjs](https://codecept.io/).
+
+The framework also utilizes following assertion libraries.
+- [ joi ]( https://joi.dev/ )
+- [ codeceptjs-chai ]( https://www.npmjs.com/package/codeceptjs-chai )
 
 ## How to run tests
 
@@ -33,4 +39,4 @@ This repository contains an automated test framework example for API Testing. Th
    npm codeceptjs run --grep "@starwars" --steps
    ```
 
-7. An HTML report is saved in `reports` directory after a successful test run.
+7. A HTML report is saved in `reports` directory after a successful test run.

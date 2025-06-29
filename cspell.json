@@ -8,6 +8,7 @@
     "firstname",
     "lastname",
     "starwars",
+    "swapi",
     "totalprice"
   ]
 }

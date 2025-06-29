@@ -19,6 +19,7 @@
     "@stylistic/eslint-plugin": "^5.0.0",
     "@types/node": "^24.0.7",
     "codeceptjs": "^3.7.3",
+    "codeceptjs-chai": "^2.3.5",
     "eslint": "^9.30.0",
     "eslint-plugin-unused-imports": "^4.1.4",
     "globals": "^16.2.0",

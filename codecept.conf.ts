@@ -13,7 +13,10 @@ export const config: CodeceptJS.MainConfig = {
     REST: {
       endpoint: 'https://reqres.in'
     },
-    JSONResponse: {}
+    JSONResponse: {},
+    'ChaiWrapper': {
+      'require': 'codeceptjs-chai'
+    }
   },
   'mocha': {
     'reporterOptions': {
