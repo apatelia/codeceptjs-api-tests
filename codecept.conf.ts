@@ -14,6 +14,9 @@ export const config: CodeceptJS.MainConfig = {
       endpoint: 'https://reqres.in'
     },
     JSONResponse: {},
+    'JsonExtendedHelper': {
+      require: './helpers/json-extended-helper.ts'
+    },
     'ChaiWrapper': {
       'require': 'codeceptjs-chai'
     }
