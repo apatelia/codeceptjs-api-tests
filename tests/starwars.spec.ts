@@ -19,6 +19,7 @@ Scenario('Get Planets', async ({ I }) => {
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
   I.sendGetRequest(`${host}/planets`); // No await here, as codeceptjs will automatically wait for the request to complete.
   I.seeResponseCodeIs(200);
+  I.seeResponseContentTypeIs('application/json');
 
   // Partial schema that only defines a part of the response structure.
   const socialSchema = Joi.object({

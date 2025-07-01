@@ -1,5 +1,6 @@
 import Helper from '@codeceptjs/helper';
 import Joi from 'joi';
+import assert from 'node:assert';
 
 class JsonExtendedHelper extends Helper {
 
@@ -88,6 +89,44 @@ class JsonExtendedHelper extends Helper {
     }
 
     return value;
+  }
+
+  /**
+   * Asserts that the response's `Content-Type` header matches the expected content type.
+   *
+   * ```js
+   * I.seeResponseContentTypeIs('application/json');
+   * I.seeResponseContentTypeIs('application/xml');
+   * ```
+   * @param contentType - The expected content type to compare against the response's `Content-Type` header.
+   * @throws {AssertionError} Throws an assertion error if the response's `Content-Type` does not match the expected value.
+   */
+  seeResponseContentTypeIs (contentType: string): void {
+    const response = this.helpers.JSONResponse.response;
+    const contentTypeHeader = `${response.headers[ 'content-type' ]}`.toLowerCase();
+
+    assert(contentTypeHeader.includes(contentType.toLowerCase()), `Expected response's content type to be '${contentType}', but got '${response.headers[ 'content-type' ]}'.`);
+  }
+
+  /**
+   * Asserts that the response headers contain the specified key, and optionally checks if the header's value includes the provided string.
+   *
+   * ```js
+   * I.seeResponseHeaderContainsKey('content-length');
+   * I.seeResponseHeaderContainsKey('x-powered-by', 'Apigee');
+   * ```
+   * @param key - The name of the response header to check for existence.
+   * @param value - (Optional) The value that the header should include. If provided, the assertion checks that the header's value contains this string.
+   * @throws AssertionError if the header is not present, or if the value does not match when specified.
+   */
+  seeResponseHeaderContainsKey (key: string, value?: string): void {
+    const response = this.helpers.JSONResponse.response;
+
+    if (value) {
+      assert(response.headers[ key ].includes(value), `Expected response header '${key}' to have value '${value}', but got '${response.headers[ key ]}'.`);
+    } else {
+      assert(response.headers[ key ], `Response does not contain header '${key}'.`);
+    }
   }
 }
 
