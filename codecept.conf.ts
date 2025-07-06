@@ -1,7 +1,4 @@
-import { setHeadlessWhen, setCommonPlugins } from '@codeceptjs/configure';
-// turn on headless mode when running with HEADLESS=true environment variable
-// export HEADLESS=true && npx codeceptjs run
-setHeadlessWhen(process.env.HEADLESS);
+import { setCommonPlugins } from '@codeceptjs/configure';
 
 // enable all common plugins https://github.com/codeceptjs/configure#setcommonplugins
 setCommonPlugins();
@@ -37,6 +34,13 @@ export const config: CodeceptJS.MainConfig = {
           'json': false,
         }
       }
+    }
+  },
+  plugins: {
+    ParallelReport: {
+      enabled: true,
+      require: './parallel-reporter/index.ts',
+      projectName: 'CodeceptJS API Tests'
     }
   },
   include: {

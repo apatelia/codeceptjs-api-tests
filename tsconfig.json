@@ -3,9 +3,9 @@
     "files": true
   },
   "compilerOptions": {
-    "target": "es2018",
+    "target": "es2022",
     "lib": [
-      "es2018",
+      "es2024",
       "DOM"
     ],
     "esModuleInterop": true,
