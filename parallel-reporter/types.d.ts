@@ -1,4 +1,6 @@
 export interface Suite {
+  /* eslint-disable @typescript-eslint/naming-convention */
+
   _startTime: string;
   _endTime: string;
   _stats: {
@@ -13,6 +15,8 @@ export interface Suite {
   };
   _tests: Test[];
   _failures: string[][];
+
+  /* eslint-enable @typescript-eslint/naming-convention */
 }
 
 export interface TestError {

@@ -37,7 +37,7 @@ export const config: CodeceptJS.MainConfig = {
     }
   },
   plugins: {
-    ParallelReport: {
+    parallelReport: {
       enabled: true,
       require: './parallel-reporter/index.ts',
       projectName: 'CodeceptJS API Tests'

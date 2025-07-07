@@ -40,19 +40,33 @@ export default [
       "no-console": "error",
       "no-warning-comments": "warn",
       "unused-imports/no-unused-imports": "error",
-      "@stylistic/quotes": [ "error", "single" ],
-      "@stylistic/semi": [ "error", "always" ],
-      "@stylistic/one-var-declaration-per-line": [ "error", "always" ],
-      "@stylistic/object-curly-spacing": [ "error", "always" ],
+      "@stylistic/max-len": [
+        "error",
+        {
+          "code": 100,
+          "ignoreComments": true,
+          "ignoreUrls": true,
+          "ignoreStrings": true,
+          "ignoreTemplateLiterals": true
+        } ],
       "@stylistic/indent": [ "error", 2 ],
       "@stylistic/linebreak-style": [ "error", "unix" ],
       "@stylistic/no-trailing-spaces": "error",
+      "@stylistic/quotes": [ "error", "single" ],
+      "@stylistic/semi": [ "error", "always" ],
+      "@stylistic/no-extra-semi": "error",
+      "@stylistic/no-multi-spaces": "error",
+      "@stylistic/one-var-declaration-per-line": [ "error", "always" ],
+      "@stylistic/object-curly-spacing": [ "error", "always" ],
       "@stylistic/array-bracket-newline": [ "error", { "multiline": true } ],
       "@stylistic/array-bracket-spacing": [ "error", "always" ],
       "@stylistic/block-spacing": [ "error", "always" ],
       "@stylistic/space-before-function-paren": "error",
       "@stylistic/comma-dangle": [ "error", "only-multiline" ],
       "@stylistic/comma-spacing": [ "error", { "before": false, "after": true } ],
+      "@stylistic/keyword-spacing": [ "error", { "before": true, "after": true } ],
+      "@stylistic/no-multiple-empty-lines": "error",
+      "@stylistic/multiline-ternary": [ "error", "always" ],
       "@stylistic/eol-last": [ "error", "always" ],
       "@typescript-eslint/no-floating-promises": "error",
       "@typescript-eslint/await-thenable": "error",
@@ -66,6 +80,40 @@ export default [
           "caughtErrors": "all",
         }
       ],
+      "@typescript-eslint/naming-convention": [
+        "error",
+        { selector: [ "variableLike", "memberLike" ], format: [ "camelCase" ] },
+        { selector: [ "typeLike", "enumMember" ], format: [ "PascalCase" ] },
+        { selector: "parameter", format: [ "camelCase", "PascalCase" ] },
+        {
+          selector: "classProperty",
+          modifiers: [ "private" ],
+          format: [ "camelCase" ],
+          leadingUnderscore: "require"
+        },
+        {
+          selector: "memberLike",
+          modifiers: [ "static", "readonly" ],
+          format: [ "UPPER_CASE" ]
+        },
+        {
+          selector: "interface",
+          format: [ "PascalCase" ],
+          custom: {
+            regex: "^I[A-Z]",
+            match: false
+          }
+        },
+        {
+          selector: "objectLiteralProperty",
+          format: null,
+          modifiers: [ "requiresQuotes" ]
+        },
+        {
+          selector: "objectLiteralProperty",
+          format: [ "camelCase", "PascalCase" ],
+        }
+      ]
     }
   }
 ];

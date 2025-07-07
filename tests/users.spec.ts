@@ -16,8 +16,10 @@ Scenario('List Users', async ({ I }) => {
 
   const schema = Joi.object({
     page: Joi.number().required(),
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     per_page: Joi.number().required(),
     total: Joi.number().required(),
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     total_pages: Joi.number().required(),
     data: Joi.array().items(userSchema).required(),
     support: supportSchema.required()

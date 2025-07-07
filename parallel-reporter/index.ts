@@ -8,7 +8,7 @@ export interface ParallelReportConfig {
   projectName?: string;
 }
 
-function ParallelReport (config: ParallelReportConfig): void {
+function parallelReport (config: ParallelReportConfig): void {
   const effectiveConfig: ParallelReportConfig = {
     outputDir: config?.outputDir || codeceptJsConfig.get().output,
     fileName: config?.fileName || 'parallel-report.html',
@@ -21,4 +21,4 @@ function ParallelReport (config: ParallelReportConfig): void {
   });
 }
 
-module.exports = ParallelReport;
+module.exports = parallelReport;

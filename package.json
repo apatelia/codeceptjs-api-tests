@@ -4,10 +4,10 @@
   "private": true,
   "scripts": {
     "test": "codeceptjs run --reporter=mocha-multi",
+    "test:parallel": "codeceptjs run-workers --suites 2",
     "users": "codeceptjs run tests/users.spec.ts --reporter=mocha-multi",
     "bookings": "codeceptjs run tests/booking.spec.ts --reporter=mocha-multi",
     "starwars": "codeceptjs run tests/starwars.spec.ts --reporter=mocha-multi",
-    "parallel": "codeceptjs run-workers --suites 2",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "prepare": "husky"

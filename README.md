@@ -31,7 +31,7 @@ The framework also utilizes following assertion libraries.
    npm run test
 
    # Run all the tests/scenarios in "PARALLEL".
-   npm run parallel
+   npm run test:parallel
 
    # Run all tests with @booking tag.
    npm codeceptjs run --grep "@booking" --steps
@@ -51,17 +51,17 @@ The framework also utilizes following assertion libraries.
 
 ## Parallel Test Report
 
-When you run all the tests in parallel by running `npm run parallel`, instead of a regular 'report.html' file, a `parallel-report.html` HTML report is generated.
+When you run all the tests in parallel by running `npm run test:parallel`, instead of a regular 'report.html' file, a `parallel-report.html` HTML report is generated.
 
 You can configure this `Parallel Test Report` using its configuration options in `codecept.conf.ts`. Below are the configuration options that you can provide value - to customize the report generation. 
 
 ```ts
   plugins: {
     ParallelReport: {
-      outputDir: './custom-reports-directory', // If not specified, takes 'output' field from codecept.conf.ts as default, i.e. 'output'.
-      fileName: 'my-report.html', // If not specified, uses 'parallel-report.html' as default.
-      projectName: 'My Cool Project' // If not specified, takes 'name' field from codecept.conf.ts as default, i.e. 'codeceptjs-api-tests'.
-      reportTitle: 'Test Report' // If not specified, uses 'Test Report' as default.
+      outputDir: './custom-reports-directory', // Optional. If not provided, takes 'output' field from codecept.conf.ts as default, i.e. 'output'.
+      fileName: 'my-report.html', // Optional. If not provided, uses 'parallel-report.html' as default.
+      projectName: 'My Cool Project' // Optional. If not provided, takes 'name' field from codecept.conf.ts as default, i.e. 'codeceptjs-api-tests'.
+      reportTitle: 'Test Report' // Optional. If not provided, uses 'Test Report' as default.
     }
   },
 ```

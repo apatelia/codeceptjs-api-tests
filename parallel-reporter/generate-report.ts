@@ -4,7 +4,10 @@ import type { ParallelReportConfig } from '.';
 import { type Step, type Suite } from './types';
 import { format } from 'date-fns';
 
-export default async function generateReport (result: Suite, config: ParallelReportConfig): Promise<void> {
+export default async function generateReport (
+  result: Suite,
+  config: ParallelReportConfig
+): Promise<void> {
   const suite = result;
 
   const htmlHead = `
@@ -229,5 +232,3 @@ function getStepArguments (step: Step): string {
 
   return formattedArgs;
 }
-
-// module.exports = generateReport;

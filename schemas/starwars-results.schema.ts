@@ -14,8 +14,10 @@ const socialSchema = Joi.object({
 
 export const schema = Joi.object({
   message: Joi.string().required(),
+  /* eslint-disable @typescript-eslint/naming-convention */
   total_records: Joi.number().required(),
   total_pages: Joi.number().required(),
+  /* eslint-enable @typescript-eslint/naming-convention */
   previous: Joi.string().allow(null),
   next: Joi.string().allow(null),
   results: Joi.array().items(starWarsResultItemSchema).required(),
