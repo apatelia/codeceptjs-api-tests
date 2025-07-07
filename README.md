@@ -65,3 +65,8 @@ You can configure this `Parallel Test Report` using its configuration options in
     }
   },
 ```
+
+All four configuration options listed above are optional. If they are not provided in config file, their respective default values are considered while generating the report. However, it is recommended that you provide values for at least `projectName` property. Refer to the screenshot below to know where and how it is displayed in the report.
+<br />
+<br />
+![Parallel Test Report](./docs/screenshots/image.png)
