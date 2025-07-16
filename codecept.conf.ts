@@ -9,15 +9,6 @@ export const config: CodeceptJS.MainConfig = {
   helpers: {
     REST: {
       endpoint: 'https://reqres.in',
-      onRequest: (request) => {
-        request.headers[ 'start-time' ] = new Date().getTime();
-      },
-      onResponse: (response) => {
-        const startTime = response.request.headers[ 'start-time' ];
-        const endTime = new Date().getTime();
-        const responseTime = endTime - startTime;
-        response.headers[ 'x-response-time' ] = responseTime;
-      }
     },
     JSONResponse: {},
     'ApiHelper': {

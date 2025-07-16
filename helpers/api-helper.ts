@@ -4,8 +4,6 @@ import Joi from 'joi';
 import assert from 'node:assert';
 
 class ApiHelper extends Helper {
-  readonly restHelper = container.helpers('REST');
-
   /**
    * Asserts that the current JSON response matches the provided partial {@link https://joi.dev/} schema.
    * Unknown/additional properties in the response are stripped before validation.
@@ -81,10 +79,7 @@ class ApiHelper extends Helper {
     const restHelper = container.helpers('REST');
     const start = performance.now();
 
-    const requestHeaders = (headers)
-      ? { headers }
-      : {};
-    const response = await restHelper.sendGetRequest(url, requestHeaders);
+    const response = await restHelper.sendGetRequest(url, { headers });
     const duration = performance.now() - start;
     response.headers[ 'x-response-time' ] = duration.toFixed(2);
 
