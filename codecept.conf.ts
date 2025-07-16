@@ -8,11 +8,20 @@ export const config: CodeceptJS.MainConfig = {
   output: './reports',
   helpers: {
     REST: {
-      endpoint: 'https://reqres.in'
+      endpoint: 'https://reqres.in',
+      onRequest: (request) => {
+        request.headers[ 'start-time' ] = new Date().getTime();
+      },
+      onResponse: (response) => {
+        const startTime = response.request.headers[ 'start-time' ];
+        const endTime = new Date().getTime();
+        const responseTime = endTime - startTime;
+        response.headers[ 'x-response-time' ] = responseTime;
+      }
     },
     JSONResponse: {},
-    'JsonExtendedHelper': {
-      require: './helpers/json-extended-helper.ts'
+    'ApiHelper': {
+      require: './helpers/api-helper.ts'
     },
     'ChaiWrapper': {
       'require': 'codeceptjs-chai'

@@ -13,3 +13,10 @@ Scenario('Check Response Content-Type', async ({ I }) => {
   // * Check if the response header contains the 'x-powered-by' key with value 'Apigee'.
   I.seeResponseHeaderContainsKey('x-powered-by', 'Apigee');
 }).tag('@responseContentType');
+
+Scenario('Check for Response Time', async ({ I }) => {
+  await I.sendTimedGetRequest('https://mocktarget.apigee.net/xml');
+  const responseTime = await I.grabResponseTime();
+  I.say(`Response time: ${responseTime} ms`);
+  I.assertBelow(responseTime, 500, 'Response time is above 500 ms');
+}).tag('@responseTime');

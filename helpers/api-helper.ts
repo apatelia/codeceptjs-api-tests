@@ -1,8 +1,10 @@
 import Helper from '@codeceptjs/helper';
+import { container } from 'codeceptjs';
 import Joi from 'joi';
 import assert from 'node:assert';
 
-class JsonExtendedHelper extends Helper {
+class ApiHelper extends Helper {
+  readonly restHelper = container.helpers('REST');
 
   /**
    * Asserts that the current JSON response matches the provided partial {@link https://joi.dev/} schema.
@@ -28,6 +30,65 @@ class JsonExtendedHelper extends Helper {
   seeResponseMatchesPartialJsonSchema (schema: Joi.ObjectSchema): void {
     const response = this.helpers.JSONResponse.response;
     Joi.assert(response.data, schema, { stripUnknown: true });
+  }
+
+  /**
+   * Asserts that the response's `Content-Type` header matches the expected content type.
+   *
+   * ```js
+   * I.seeResponseContentTypeIs('application/json');
+   * I.seeResponseContentTypeIs('application/xml');
+   * ```
+   * @param contentType - The expected content type to compare against the response's `Content-Type` header.
+   * @throws {AssertionError} Throws an assertion error if the response's `Content-Type` does not match the expected value.
+   */
+  seeResponseContentTypeIs (contentType: string): void {
+    const response = this.helpers.JSONResponse.response;
+    const contentTypeHeader = `${response.headers[ 'content-type' ]}`.toLowerCase();
+
+    assert(contentTypeHeader.includes(contentType.toLowerCase()), `Expected response's content type to be '${contentType}', but got '${response.headers[ 'content-type' ]}'.`);
+  }
+
+  /**
+   * Asserts that the response headers contain the specified key, and optionally checks if the header's value includes the provided string.
+   *
+   * ```js
+   * I.seeResponseHeaderContainsKey('content-length');
+   * I.seeResponseHeaderContainsKey('x-powered-by', 'Apigee');
+   * ```
+   * @param key - The name of the response header to check for existence.
+   * @param value - (Optional) The value that the header should include. If provided, the assertion checks that the header's value contains this string.
+   * @throws AssertionError if the header is not present, or if the value does not match when specified.
+   */
+  seeResponseHeaderContainsKey (key: string, value?: string): void {
+    const response = this.helpers.JSONResponse.response;
+
+    if (value) {
+      assert(response.headers[ key ].includes(value), `Expected response header '${key}' to have value '${value}', but got '${response.headers[ key ]}'.`);
+    } else {
+      assert(response.headers[ key ], `Response does not contain header '${key}'.`);
+    }
+  }
+
+  /**
+   * Sends a GET request and measures the time taken for the request.
+   * @param url - The URL to send the GET request to.
+   * @param headers - Optional headers to include in the request.
+   * @returns The response from the GET request.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async sendTimedGetRequest (url: string, headers?: any): Promise<any> {
+    const restHelper = container.helpers('REST');
+    const start = performance.now();
+
+    const requestHeaders = (headers)
+      ? { headers }
+      : {};
+    const response = await restHelper.sendGetRequest(url, requestHeaders);
+    const duration = performance.now() - start;
+    response.headers[ 'x-response-time' ] = duration.toFixed(2);
+
+    return response;
   }
 
   /**
@@ -92,42 +153,15 @@ class JsonExtendedHelper extends Helper {
   }
 
   /**
-   * Asserts that the response's `Content-Type` header matches the expected content type.
-   *
-   * ```js
-   * I.seeResponseContentTypeIs('application/json');
-   * I.seeResponseContentTypeIs('application/xml');
-   * ```
-   * @param contentType - The expected content type to compare against the response's `Content-Type` header.
-   * @throws {AssertionError} Throws an assertion error if the response's `Content-Type` does not match the expected value.
+   * Retrieves the response time from the headers.
+   * @returns The response time in milliseconds.
    */
-  seeResponseContentTypeIs (contentType: string): void {
+  async grabResponseTime (): Promise<number> {
     const response = this.helpers.JSONResponse.response;
-    const contentTypeHeader = `${response.headers[ 'content-type' ]}`.toLowerCase();
+    const responseTime = Number(response.headers[ 'x-response-time' ]);
 
-    assert(contentTypeHeader.includes(contentType.toLowerCase()), `Expected response's content type to be '${contentType}', but got '${response.headers[ 'content-type' ]}'.`);
-  }
-
-  /**
-   * Asserts that the response headers contain the specified key, and optionally checks if the header's value includes the provided string.
-   *
-   * ```js
-   * I.seeResponseHeaderContainsKey('content-length');
-   * I.seeResponseHeaderContainsKey('x-powered-by', 'Apigee');
-   * ```
-   * @param key - The name of the response header to check for existence.
-   * @param value - (Optional) The value that the header should include. If provided, the assertion checks that the header's value contains this string.
-   * @throws AssertionError if the header is not present, or if the value does not match when specified.
-   */
-  seeResponseHeaderContainsKey (key: string, value?: string): void {
-    const response = this.helpers.JSONResponse.response;
-
-    if (value) {
-      assert(response.headers[ key ].includes(value), `Expected response header '${key}' to have value '${value}', but got '${response.headers[ key ]}'.`);
-    } else {
-      assert(response.headers[ key ], `Response does not contain header '${key}'.`);
-    }
+    return responseTime;
   }
 }
 
-export = JsonExtendedHelper;
+export = ApiHelper;
