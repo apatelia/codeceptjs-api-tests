@@ -227,7 +227,7 @@ function getStepArguments (step: Step): string {
     }
   }
 
-  // Strip off last comma and arguments.
+  // Strip off redundant last comma and whitespace from arguments.
   formattedArgs = formattedArgs.replace(/(, )$/, '');
 
   return formattedArgs;

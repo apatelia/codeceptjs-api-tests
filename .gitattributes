@@ -1,0 +1,2 @@
+# Set the default EOL behavior for git.
+text eol=lf
