@@ -73,6 +73,10 @@ class ApiHelper extends Helper {
    * @param url - The URL to send the GET request to.
    * @param headers - Optional headers to include in the request.
    * @returns The response from the GET request.
+   *
+   * ```js
+   * await I.sendTimedGetRequest(`/api/endpoint`, { 'Accept': 'application/json' });
+   * ```
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async sendTimedGetRequest (url: string, headers?: any): Promise<any> {
@@ -150,6 +154,11 @@ class ApiHelper extends Helper {
   /**
    * Retrieves the response time from the headers.
    * @returns The response time in milliseconds.
+   *
+   * ```js
+   * * // Example usage:
+   * const responseTime = await I.grabResponseTime();
+   * ```
    */
   async grabResponseTime (): Promise<number> {
     const response = this.helpers.JSONResponse.response;

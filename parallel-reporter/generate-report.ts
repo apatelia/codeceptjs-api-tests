@@ -136,23 +136,28 @@ export default async function generateReport (
           <span><code>${fullStep}</code></span>
           </li>`;
         }
+
         html += '</ul>'; // End of list-group.
 
         if (test.err) {
           const errorStack = test.err.stack
             ? test.err.stack.toWellFormed().replace(/(\[\d{1,2}m)/gm, '').trim()
             : 'No stack trace available';
+
           const errorMessage = test.err.message
             ? test.err.message.toWellFormed()
             : 'No error message available';
+
           const actualValue = test.err.actual.toWellFormed();
           const expectedValue = test.err.expected.toWellFormed();
+
           const error = {
             stack: errorStack,
             message: errorMessage,
             actual: actualValue,
             expected: expectedValue,
           };
+
           html += '<div class="alert alert-danger mt-3" role="alert">';
           html += '<pre>';
           html += `${'Error: '.concat(error.message)}`;

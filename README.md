@@ -48,12 +48,11 @@ The framework also utilizes following assertion libraries.
 
 5. A HTML report is saved in `reports` directory after a successful test run.
 
-
 ## Parallel Test Report
 
-When you run all the tests in parallel by running `npm run test:parallel`, instead of a regular 'report.html' file, a `parallel-report.html` HTML report is generated.
+When you run the tests in parallel by running `npm run test:parallel`, instead of a regular 'report.html' file, a `parallel-report.html` HTML report is generated.
 
-You can configure this `Parallel Test Report` using its configuration options in `codecept.conf.ts`. Below are the configuration options that you can provide value - to customize the report generation. 
+You can configure this `Parallel Test Report` using its configuration options in `codecept.conf.ts`. Below are the configuration options that you can provide value - to customize the report generation.
 
 ```ts
   plugins: {

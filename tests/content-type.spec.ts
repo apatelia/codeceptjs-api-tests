@@ -15,8 +15,13 @@ Scenario('Check Response Content-Type', async ({ I }) => {
 }).tag('@responseContentType');
 
 Scenario('Check for Response Time', async ({ I }) => {
+  // Send a timed GET request to measure response time.
   await I.sendTimedGetRequest('https://mocktarget.apigee.net/xml');
+
+  // To use grabResponseTime(),
+  // you must first use a timed request method like sendTimedGetRequest() to make API request.
   const responseTime = await I.grabResponseTime();
   I.say(`Response time: ${responseTime} ms`);
+
   I.assertBelow(responseTime, 500, 'Response time is above 500 ms');
 }).tag('@responseTime');
