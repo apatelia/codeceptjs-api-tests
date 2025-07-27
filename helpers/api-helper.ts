@@ -83,7 +83,7 @@ class ApiHelper extends Helper {
     const restHelper = container.helpers('REST');
     const start = performance.now();
 
-    const response = await restHelper.sendGetRequest(url, { headers });
+    const response = await restHelper.sendGetRequest(url, headers);
     const duration = performance.now() - start;
     response.headers[ 'x-response-time' ] = duration.toFixed(2);
 
