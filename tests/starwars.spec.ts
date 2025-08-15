@@ -1,7 +1,7 @@
 Feature('Star Wars API').tag('@starwars');
 
-import { schema } from '../schemas/starwars-results.schema';
 import Joi from 'joi';
+import { schema } from '../schemas/starwars-results.schema';
 
 const host = 'https://www.swapi.tech/api';
 

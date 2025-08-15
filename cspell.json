@@ -9,6 +9,9 @@
     "lastname",
     "starwars",
     "swapi",
-    "totalprice"
+    "totalprice",
+    "vtsls",
+    "codeceptjs",
+    "mochawesome"
   ]
 }

@@ -1,0 +1,103 @@
+{
+  "tab_size": 2,
+  "remove_trailing_whitespace_on_save": true,
+  "ensure_final_newline_on_save": true,
+  "show_completion_documentation": true,
+  "format_on_save": "on",
+  "lsp_highlight_debounce": 10,
+  "lsp": {
+    "vtsls": {
+      "settings": {
+        "javascript": {
+          "preferences": {
+            "quoteStyle": "single"
+          },
+          "format": {
+            "enable": true,
+            "semicolons": "insert",
+            "insertSpaceAfterCommaDelimiter": true,
+            "insertSpaceAfterSemicolonInForStatements": true,
+            "insertSpaceBeforeAndAfterBinaryOperators": true,
+            "insertSpaceAfterKeywordsInControlFlowStatements": true,
+            "insertSpaceAfterConstructor": true,
+            "insertSpaceBeforeFunctionParenthesis": true,
+            "insertSpaceAfterFunctionKeywordForAnonymousFunctions": true,
+            "insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis": false,
+            "insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets": true,
+            "insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": true,
+            "insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": true,
+            "insertSpaceAfterOpeningAndBeforeClosingTemplateStringBraces": false,
+            "placeOpenBraceOnNewLineForFunctions": false,
+            "placeOpenBraceOnNewLineForControlBlocks": false
+          }
+        },
+        "typescript": {
+          "preferences": {
+            "quoteStyle": "single"
+          },
+          "format": {
+            "enable": true,
+            "semicolons": "insert",
+            "insertSpaceAfterCommaDelimiter": true,
+            "insertSpaceAfterSemicolonInForStatements": true,
+            "insertSpaceBeforeAndAfterBinaryOperators": true,
+            "insertSpaceAfterKeywordsInControlFlowStatements": true,
+            "insertSpaceAfterConstructor": true,
+            "insertSpaceBeforeFunctionParenthesis": true,
+            "insertSpaceAfterFunctionKeywordForAnonymousFunctions": true,
+            "insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis": false,
+            "insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets": true,
+            "insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": true,
+            "insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": true,
+            "insertSpaceAfterOpeningAndBeforeClosingTemplateStringBraces": false,
+            "placeOpenBraceOnNewLineForFunctions": false,
+            "placeOpenBraceOnNewLineForControlBlocks": false
+          }
+        }
+      }
+    }
+  },
+  "languages": {
+    "TypeScript": {
+      "formatter": "language_server",
+      "language_servers": [
+        "vtsls",
+        "eslint",
+        "cspell"
+      ],
+      "code_actions_on_format": {
+        "source.organizeImports": true,
+        "source.fixAll.eslint": true
+      }
+    },
+    "JavaScript": {
+      "formatter": "language_server",
+      "language_servers": [
+        "vtsls",
+        "eslint",
+        "cspell"
+      ],
+      "code_actions_on_format": {
+        "source.fixAll.eslint": true,
+        "source.organizeImports": true
+      }
+    },
+    "JSON": {
+      "formatter": "language_server",
+      "language_servers": [
+        "json-language-server",
+        "!prettier",
+        "cspell",
+        "package-version-server"
+      ]
+    },
+    "JSONC": {
+      "formatter": "language_server",
+      "language_servers": [
+        "json-language-server",
+        "!prettier",
+        "cspell"
+      ]
+    }
+  }
+}

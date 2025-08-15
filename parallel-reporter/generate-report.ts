@@ -1,8 +1,8 @@
+import { format } from 'date-fns';
 import { writeFileSync } from 'node:fs';
 import path from 'node:path';
 import type { ParallelReportConfig } from '.';
 import { type Step, type Suite } from './types';
-import { format } from 'date-fns';
 
 export default async function generateReport (
   result: Suite,

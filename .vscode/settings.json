@@ -5,7 +5,7 @@
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "vscode.typescript-language-features",
   "typescript.format.enable": true,
-  "typescript.preferences.quoteStyle": "double",
+  "typescript.preferences.quoteStyle": "single",
   "typescript.format.semicolons": "insert",
   "typescript.format.insertSpaceAfterCommaDelimiter": true,
   "typescript.format.insertSpaceAfterSemicolonInForStatements": true,
@@ -22,7 +22,7 @@
   "typescript.format.placeOpenBraceOnNewLineForFunctions": false,
   "typescript.format.placeOpenBraceOnNewLineForControlBlocks": false,
   "javascript.format.enable": true,
-  "javascript.preferences.quoteStyle": "double",
+  "javascript.preferences.quoteStyle": "single",
   "javascript.format.semicolons": "insert",
   "javascript.format.insertSpaceAfterCommaDelimiter": true,
   "javascript.format.insertSpaceAfterSemicolonInForStatements": true,
@@ -43,8 +43,5 @@
   },
   "[jsonc]": {
     "editor.defaultFormatter": "vscode.json-language-features"
-  },
-  "cSpell.words": [
-    "sadface"
-  ],
+  }
 }

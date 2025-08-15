@@ -1,4 +1,4 @@
-import { event, config as codeceptJsConfig } from 'codeceptjs';
+import { config as codeceptJsConfig, event } from 'codeceptjs';
 import generateReport from './generate-report';
 
 export interface ParallelReportConfig {
