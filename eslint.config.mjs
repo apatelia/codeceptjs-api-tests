@@ -1,5 +1,7 @@
+import cSpellConfigs from "@cspell/eslint-plugin/configs";
 import eslintJs from "@eslint/js";
 import stylistic from "@stylistic/eslint-plugin";
+import checkFile from "eslint-plugin-check-file";
 import unusedImports from "eslint-plugin-unused-imports";
 import globals from "globals";
 import teslint from "typescript-eslint";
@@ -25,12 +27,14 @@ export default [
       }
     }
   },
+  cSpellConfigs.recommended,
   eslintJs.configs.recommended,
   ...teslint.configs.recommended,
   {
     plugins: {
       "@stylistic": stylistic,
       "unused-imports": unusedImports,
+      "check-file": checkFile
     }
   },
   {
@@ -112,6 +116,26 @@ export default [
         {
           selector: "objectLiteralProperty",
           format: [ "camelCase", "PascalCase" ],
+        }
+      ],
+      "@cspell/spellchecker": [
+        "warn",
+        {
+          configFile: new URL("./cspell.json", import.meta.url).toString(),
+        }
+      ]
+    }
+  },
+  {
+    rules: {
+      "check-file/filename-naming-convention": [
+        "error",
+        {
+          "./tests/**": "*.spec",
+          "./schemas/**": "*.schema",
+        },
+        {
+          errorMessage: '"{{target}}" does not match the file naming convention "{{pattern}}.ts"'
         }
       ]
     }
