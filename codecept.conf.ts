@@ -11,11 +11,11 @@ export const config: CodeceptJS.MainConfig = {
       endpoint: 'https://reqres.in',
     },
     JSONResponse: {},
+    'ExpectHelper': {
+      'require': '@codeceptjs/expect-helper'
+    },
     'ApiHelper': {
       require: './helpers/api-helper.ts'
-    },
-    'ChaiWrapper': {
-      'require': 'codeceptjs-chai'
     }
   },
   'mocha': {

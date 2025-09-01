@@ -13,7 +13,7 @@ Scenario('Get People', async ({ I }) => {
 
   const nextLink = response.data.next;
   const linkRegex = /^https:\/\/www\.swapi\.tech\/api\/[a-z]+(\?page=\d&limit=\d{1,2})?/;
-  I.assertMatchRegex(nextLink, linkRegex);
+  I.expectMatchRegex(nextLink, linkRegex);
 });
 
 Scenario('Get Planets', async ({ I }) => {
@@ -44,5 +44,5 @@ Scenario('Get Planets', async ({ I }) => {
   // * 'await' is used here to ensure that the value is retrieved before the next assertion.
   const nextLink = await I.grabFieldFromResponse('next');
   const linkRegex = /^https:\/\/www\.swapi\.tech\/api\/[a-z]+(\?page=\d&limit=\d{1,2})?/;
-  I.assertMatchRegex(nextLink, linkRegex);
+  I.expectMatchRegex(nextLink, linkRegex);
 });

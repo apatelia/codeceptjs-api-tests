@@ -23,5 +23,5 @@ Scenario('Check for Response Time', async ({ I }) => {
   const responseTime = await I.grabResponseTime();
   I.say(`Response time: ${responseTime} ms`);
 
-  I.assertBelow(responseTime, 500, 'Response time is above 500 ms');
+  I.expectBelow(responseTime, 500, 'Response time is above 500 ms');
 }).tag('@responseTime');

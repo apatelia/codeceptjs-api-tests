@@ -67,8 +67,8 @@ Scenario('Get booking details', async ({ I }) => {
   });
 
   const bookingDates = response.data.bookingdates;
-  I.assertMatchRegex(bookingDates.checkin, /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/);
-  I.assertMatchRegex(bookingDates.checkout, /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/);
+  I.expectMatchRegex(bookingDates.checkin, /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/);
+  I.expectMatchRegex(bookingDates.checkout, /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/);
 });
 
 Scenario('Delete booking', async ({ I }) => {
