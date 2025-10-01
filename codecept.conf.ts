@@ -11,27 +11,27 @@ export const config: CodeceptJS.MainConfig = {
       endpoint: 'https://reqres.in',
     },
     JSONResponse: {},
-    'ExpectHelper': {
-      'require': '@codeceptjs/expect-helper'
+    ExpectHelper: {
+      require: '@codeceptjs/expect-helper'
     },
-    'ApiHelper': {
+    ApiHelper: {
       require: './helpers/api-helper.ts'
     }
   },
-  'mocha': {
-    'reporterOptions': {
+  mocha: {
+    reporterOptions: {
       'codeceptjs-cli-reporter': {
-        'stdout': '-',
-        'options': {
-          'steps': true,
+        stdout: '-',
+        options: {
+          steps: true,
         }
       },
-      'mochawesome': {
-        'stdout': '-',
-        'options': {
-          'reportDir': './reports',
-          'reportFilename': 'report',
-          'json': false,
+      mochawesome: {
+        stdout: '-',
+        options: {
+          reportDir: './reports',
+          reportFilename: 'report',
+          json: false,
         }
       }
     }
