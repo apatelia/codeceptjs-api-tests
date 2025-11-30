@@ -1,15 +1,14 @@
+import { output } from 'codeceptjs';
 import { format } from 'date-fns';
 import { writeFileSync } from 'node:fs';
 import path from 'node:path';
 import type { ParallelReportConfig } from '.';
-import { type Step, type Suite } from './types';
+import { TestSuite } from './test-suite';
 
 export default async function generateReport (
-  result: Suite,
+  suite: TestSuite,
   config: ParallelReportConfig
 ): Promise<void> {
-  const suite = result;
-
   const htmlHead = `
   <!doctype html>
   <html lang="en" data-bs-theme="light">
@@ -20,10 +19,11 @@ export default async function generateReport (
       <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" />
       <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=warning" />
     </head>
   `;
 
-  const reportGenerationTime = format(new Date(suite._endTime), 'dd MMM yyyy, hh:mm:ss a');
+  const reportGenerationTime = format(new Date(suite.endTime), 'dd MMM yyyy, hh:mm:ss a');
 
   let html = htmlHead;
   html += '  <body>';
@@ -37,64 +37,66 @@ export default async function generateReport (
   html += '         <span class="col text-center">';
   html += '           <span class="material-symbols-rounded align-bottom text-info">schedule</span>';
   html += '           <span class="p-1 fw-bold">Duration:</span>';
-  html += `           <span>${(suite._stats.duration / 1000).toFixed(2)} s</span>`;
+  html += `           <span>${(suite.duration / 1000).toFixed(2)} s</span>`;
   html += '         </span>';
   html += '         <span class="col text-center">';
   html += '           <span class="material-symbols-rounded align-bottom text-primary">experiment</span>';
   html += '           <span class="p-1 fw-bold">Tests:</span>';
-  html += `           <span>${suite._stats.tests}</span>`;
+  html += `           <span>${suite.stats.totalTests}</span>`;
   html += '         </span>';
   html += '         <span class="col text-center">';
   html += '           <span class="material-symbols-rounded align-bottom text-success">verified</span>';
   html += '           <span class="p-1 fw-bold">Passed:</span>';
-  html += `           <span>${suite._stats.passes}</span>`;
+  html += `           <span>${suite.stats.passedTests}</span>`;
   html += '         </span>';
   html += '         <span class="col text-center">';
   html += '           <span class="material-symbols-rounded align-bottom text-danger">dangerous</span>';
   html += '           <span class="p-1 fw-bold">Failed:</span>';
-  html += `           <span>${suite._stats.failures}</span>`;
+  html += `           <span>${suite.stats.failedTests}</span>`;
   html += '         </span>';
   html += '         <span class="col text-center">';
   html += '           <span class="material-symbols-rounded align-bottom text-warning">hourglass_top</span>';
-  html += '           <span class="p-1 fw-bold">Pending:</span>';
-  html += `           <span>${suite._stats.pending}</span>`;
+  html += '           <span class="p-1 fw-bold">Skipped:</span>';
+  html += `           <span>${suite.stats.skippedTests}</span>`;
   html += '         </span>';
   html += '       </div>';
   html += '     </div>';
   html += '   </div>';
 
-  const testGroups = Object.groupBy(suite._tests, (test) => test[ 'parent' ].title);
+  const testGroupedByFiles = Object.groupBy(suite.tests, (test) => test.file);
 
-  html += '   <div class="container mt-4">';
+  html += '   <div class="container mt-4">'; // Start of report body container
 
-  let groupCount = 1;
+  let fileCount = 1;
   let accordionCollapseCount = 1;
+  let errorCount = 1;
 
-  for (const group in testGroups) {
-    const tests = testGroups[ group ];
+  for (const file in testGroupedByFiles) {
+    const tests = testGroupedByFiles[ file ];
+    const shortenedFileName = file.replace(process.cwd(), '');
+
+    const fileExecutionDuration = tests.map((test) => test.duration)
+      .reduce((accumulator, currentValue) => accumulator + currentValue, 0);
 
     html += '   <div class="d-grid gap-2">';
-    html += `     <button class="btn btn-primary text-start rounded-0" type="button" data-bs-toggle="collapse" data-bs-target="#collapse${groupCount}" aria-expanded="false" aria-controls="collapse${groupCount}">`;
-    html += `       <span>${group}</span>`;
+    html += `     <button class="btn btn-primary rounded-0" type="button" data-bs-toggle="collapse" data-bs-target="#collapse${fileCount}" aria-expanded="false" aria-controls="collapse${fileCount}">`;
+    html += '       <div class="hstack gap-3">';
+    html += `         <div class="p-2">${shortenedFileName}</div>`;
+    html += '         <div class="p-2 ms-auto">&nbsp;</div>';
+    html += `         <div class="p-2">${(fileExecutionDuration / 1000).toFixed(2)}s</div>`;
+    html += '       </div>';
     html += '     </button>';
     html += '   </div>';
 
-    if (groupCount === 1) {
-      html += `   <div class="collapse rounded-0 show" id="collapse${groupCount}">`;
-    } else {
-      html += `   <div class="collapse rounded-0" id="collapse${groupCount}">`;
-    }
-
-    html += `<div class="accordion rounded-0" id="accordion${groupCount}">`;
+    html += `   <div class="collapse rounded-0 show" id="collapse${fileCount}">`;
+    html += `<div class="accordion rounded-0" id="accordion${fileCount}">`;
 
     if (tests && tests.length > 0) {
-      for (const test of tests!) {
-        html += '<div class="accordion-item rounded-0">';
-        html += '<h2 class="accordion-header rounded-0">';
-        html += `<button class="accordion-button rounded-0" type="button" data-bs-toggle="collapse" data-bs-target="#accordionCollapse${accordionCollapseCount}" aria-expanded="true" aria-controls="accordionCollapse${accordionCollapseCount}">`;
-        const icon = test.state === 'passed'
-          ? '<span class="material-symbols-rounded text-success">check</span>'
-          : '<span class="material-symbols-rounded text-danger">close</span>';
+      for (const test of tests) {
+        html += '<div class="accordion-item rounded-0">'; // Start of accordion-item
+        html += '<h2 class="accordion-header rounded-0">'; // Start of accordion-header
+        html += `<button class="accordion-button rounded-0 collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionCollapse${accordionCollapseCount}" aria-expanded="false" aria-controls="accordionCollapse${accordionCollapseCount}">`;
+        const icon = getTestIcon(test.status);
         html += `${icon}`;
         html += `     <span class="text-wrap p-2">${test.title}</span>`;
 
@@ -102,8 +104,8 @@ export default async function generateReport (
         html += '</button>';
         html += '</h2>'; // End of accordion-header
 
-        html += `<div id="accordionCollapse${accordionCollapseCount}" class="accordion-collapse collapse" data-bs-parent="#accordion${groupCount}">`;
-        html += '<div class="accordion-body">';
+        html += `<div id="accordionCollapse${accordionCollapseCount}" class="accordion-collapse collapse" data-bs-parent="#accordion${fileCount}">`;
+        html += '<div class="accordion-body">'; // Start of accordion-body
 
         if (test.tags && test.tags.length > 0) {
           html += '<div class="d-flex gap-0 column-gap-1">';
@@ -125,48 +127,71 @@ export default async function generateReport (
         const sortedSteps = test.steps.sort((prev, next) => prev.startTime - next.startTime);
 
         for (const step of sortedSteps) {
-          const stepStatusIcon = step.status === 'success'
+          const stepStatusIcon = step.status === 'passed'
             ? '<span class="material-symbols-rounded align-bottom text-success">check_small</span>'
             : step.status === 'failed'
               ? '<span class="material-symbols-rounded align-bottom text-danger">close_small</span>'
               : '<span class="material-symbols-rounded align-bottom text-warning">exclamation</span>';
-          const fullStep = `${step.actor}.${step.name}(${getStepArguments(step)})`;
+          const completeStep = `${step.actor}.${step.name}(${step.args})`;
           html += `<li class="list-group-item">
             <span>${stepStatusIcon}</span>
-          <span><code>${fullStep}</code></span>
+          <span><code>${completeStep}</code></span>
+          </li>`;
+        }
+
+        if (test.status === 'pending') {
+          html += `<li class="list-group-item">
+            <span class="material-symbols-rounded align-bottom text-warning">exclamation</span>
+          <span><code>${test.skipInfo}</code></span>
           </li>`;
         }
 
         html += '</ul>'; // End of list-group.
 
-        if (test.err) {
-          const errorStack = test.err.stack
-            ? test.err.stack.toWellFormed().replace(/(\[\d{1,2}m)/gm, '').trim()
-            : 'No stack trace available';
+        if (test.error) {
+          const error = test.error;
 
-          const errorMessage = test.err.message
-            ? test.err.message.toWellFormed()
-            : 'No error message available';
+          html += '<div class="mt-3">'; // Start of Error container
 
-          const actualValue = test.err.actual.toWellFormed();
-          const expectedValue = test.err.expected.toWellFormed();
-
-          const error = {
-            stack: errorStack,
-            message: errorMessage,
-            actual: actualValue,
-            expected: expectedValue,
-          };
-
-          html += '<div class="alert alert-danger mt-3" role="alert">';
+          html += `<ul class="nav nav-tabs" id="tabList${errorCount}" role="tablist">`; // Start of tab buttons
+          html += '<li class="nav-item" role="presentation">';
+          html += `<button class="nav-link active" id="error-tab${errorCount}" data-bs-toggle="tab" data-bs-target="#error-tab-pane${errorCount}" type="button" role="tab" aria-controls="error-tab-pane${errorCount}" aria-selected="true">Error Details</button>`;
+          html += '</li>';
+          html += '<li class="nav-item" role="presentation">';
+          html += `<button class="nav-link" id="stack-tab${errorCount}" data-bs-toggle="tab" data-bs-target="#stack-tab-pane${errorCount}" type="button" role="tab" aria-controls="stack-tab-pane${errorCount}" aria-selected="false">Error Stack</button>`;
+          html += '</li>';
+          html += '</ul>'; // End of tab buttons
+          html += `<div class="tab-content p-2 border border-top-0 rounded-bottom" id="tabContent${errorCount}">`;
+          html += `<div class="tab-pane fade show active" id="error-tab-pane${errorCount}" role="tabpanel" aria-labelledby="error-tab${errorCount}" tabindex="0">`;
+          html += '<div class="alert alert-danger" role="alert">';
           html += '<pre>';
-          html += `${'Error: '.concat(error.message)}`;
-          html += `${'\nActual: '.concat(error.actual)}`;
-          html += `${'\nExpected: '.concat(error.expected)}`;
-          html += `${'\n'.concat(error.stack)}`;
-          html += '</pre>';
+          html += '<div class="vstack">';
+          html += '<div class="p-1">';
+          html += `${'Error: '.concat('\n').concat(error.message)}`;
           html += '</div>';
+          html += '<div class="p-1">';
+          html += `${'\nActual: '.concat('\n').concat(error.actual)}`;
+          html += '</div>';
+          html += '<div class="p-1">';
+          html += `${'\nExpected: '.concat('\n').concat(error.expected)}`;
+          html += '</div>';
+          html += '</div>'; // End of vstack
+          html += '</pre>';
+          html += '</div>'; // End of alert
+          html += '</div>'; // End of error tab
+          html += `<div class="tab-pane fade" id="stack-tab-pane${errorCount}" role="tabpanel" aria-labelledby="stack-tab${errorCount}" tabindex="0">`;
+          html += '<div class="alert alert-danger" role="alert">';
+          html += '<pre>';
+          html += `${error.stack}`;
+          html += '</pre>';
+          html += '</div>'; // End of alert
+          html += '</div>'; // End of stack tab
+          html += '</div>'; // End of tab content div
+
+          html += '</div>'; // End of error container
         }
+
+        errorCount++;
 
         html += '</div>'; // End of container inside accordion-body
         html += '</div>'; // End of accordion-body
@@ -180,10 +205,107 @@ export default async function generateReport (
     html += '   </div>'; // End of collapse
     html += '   <br/>';
 
-    groupCount++;
+    fileCount++;
   }
 
-  html += '   </div>';
+  html += '   </div>'; // End of report body container
+
+  const failures = suite.failures;
+
+  if (failures && failures.length > 0) {
+    html += '<div class="container mt-4">'; // Start of failures container
+
+    html += '   <div class="d-grid gap-2">';
+    html += `     <button class="btn btn-primary text-start rounded-0" type="button" data-bs-toggle="collapse" data-bs-target="#collapse${fileCount}" aria-expanded="false" aria-controls="collapse${fileCount}">`;
+    html += '       <div class="hstack gap-3">';
+    html += '         <div class="p-2"><span class="material-symbols-rounded position-absolute translate-middle">error</span></div>';
+    html += '         <div>Failures</div>';
+    html += '         <div class="p-2 ms-auto">&nbsp;</div>';
+    html += `         <div class="p-2">${failures.length}</div>`;
+    html += '       </div>';
+    html += '     </button>';
+    html += '   </div>';
+
+    html += `<div class="collapse rounded-0 show" id="collapse${fileCount}">`; // Start of failures collapse
+
+    html += `<div class="accordion rounded-0" id="accordion${fileCount}">`; // Start of failures accordion
+
+    let failureCount = 10001;
+
+    for (const error of failures) {
+      html += '<div class="accordion-item rounded-0">'; // Start of accordion-item
+
+      const shortenedFileName = error.file.replace(process.cwd(), '');
+
+      html += '<h2 class="accordion-header rounded-0">'; // Start of accordion-header
+      html += `<button class="accordion-button rounded-0 collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionCollapse${accordionCollapseCount}" aria-expanded="false" aria-controls="accordionCollapse${accordionCollapseCount}">`;
+      // html += '       <div class="hstack gap-3">';
+      // html += `         <div class="p-2">${shortenedFileName}</div>`;
+      // html += `         <div class="p-2 m-auto">${error.testName}</div>`;
+      // html += `         <div class="p-2">${error.message}</div>`;
+      // html += '       </div>';
+      html += '<ul class="list-group list-group-horizontal">';
+      html += `<li class="list-group-item flex-fill">${shortenedFileName}</li>`;
+      html += `<li class="list-group-item flex-fill text-wrap">${error.testName}</li>`;
+      html += `<li class="list-group-item flex-fill text-wrap">${error.message}</li>`;
+      html += '</ul>';
+      html += '</button>';
+      html += '</h2>'; // End of accordion-header
+
+      html += `<div id="accordionCollapse${accordionCollapseCount}" class="accordion-collapse collapse p-3" data-bs-parent="#accordion${fileCount}">`; // Start of failure accordion-body-collapse
+      html += '<div class="accordion-body">'; // Start of accordion-body
+
+      html += '<div class="mt-3">'; // Start of Error container
+
+      html += `<ul class="nav nav-tabs" id="tabList${failureCount}" role="tablist">`; // Start of tab buttons
+      html += '<li class="nav-item" role="presentation">';
+      html += `<button class="nav-link active" id="error-tab${failureCount}" data-bs-toggle="tab" data-bs-target="#error-tab-pane${failureCount}" type="button" role="tab" aria-controls="error-tab-pane${failureCount}" aria-selected="true">Error Details</button>`;
+      html += '</li>';
+      html += '<li class="nav-item" role="presentation">';
+      html += `<button class="nav-link" id="stack-tab${failureCount}" data-bs-toggle="tab" data-bs-target="#stack-tab-pane${failureCount}" type="button" role="tab" aria-controls="stack-tab-pane${failureCount}" aria-selected="false">Error Stack</button>`;
+      html += '</li>';
+      html += '</ul>'; // End of tab buttons
+      html += `<div class="tab-content p-2 border border-top-0 rounded-bottom" id="tabContent${failureCount}">`;
+      html += `<div class="tab-pane fade show active" id="error-tab-pane${failureCount}" role="tabpanel" aria-labelledby="error-tab${failureCount}" tabindex="0">`;
+      html += '<div class="alert alert-danger" role="alert">';
+      html += '<pre>';
+      html += '<div class="vstack">';
+      html += '<div class="p-1">';
+      html += `${'Error: '.concat('\n').concat(error.message)}`;
+      html += '</div>';
+      html += '<div class="p-1">';
+      html += `${'\nActual: '.concat('\n').concat(error.actual)}`;
+      html += '</div>';
+      html += '<div class="p-1">';
+      html += `${'\nExpected: '.concat('\n').concat(error.expected)}`;
+      html += '</div>';
+      html += '</div>'; // End of vstack
+      html += '</pre>';
+      html += '</div>'; // End of alert
+      html += '</div>'; // End of error tab
+      html += `<div class="tab-pane fade" id="stack-tab-pane${failureCount}" role="tabpanel" aria-labelledby="stack-tab${failureCount}" tabindex="0">`;
+      html += '<div class="alert alert-danger" role="alert">';
+      html += '<pre>';
+      html += `${error.stack}`;
+      html += '</pre>';
+      html += '</div>'; // End of alert
+      html += '</div>'; // End of stack tab
+      html += '</div>'; // End of tab content div
+
+      html += '</div>'; // End of error container
+
+      html += '   </div>'; // End of failures accordion-body
+      html += '   </div>'; // End of failures accordion-body-collapse
+      html += '   </div>'; // End of failures accordion-item
+
+      accordionCollapseCount++;
+      failureCount++;
+    }
+
+    html += '   </div>'; // End of failures accordion
+    html += '   </div>'; // End of failures collapse
+    html += '   </div>'; // End of failures container
+  }
 
   html += '<div class="container justify-content-center p-2">';
   html += '<hr/>';
@@ -199,41 +321,34 @@ export default async function generateReport (
   try {
     const reportFilePath = path.normalize(`${config.outputDir}/${config.fileName}`);
     writeFileSync(reportFilePath, html, 'utf-8');
-    // eslint-disable-next-line no-console
-    console.log('\n', `A report was generated successfully at ${reportFilePath}`);
+
+    output.success(`\nA report was generated successfully at ${reportFilePath}`);
   } catch (err) {
     if (err instanceof Error) {
-      // eslint-disable-next-line no-console
-      console.error('Error generating the report:', err.message, err.stack);
+
+      output.error(`\nError generating the report: ${err.message}`);
+      output.error(err.stack);
     }
   }
 }
 
-function getStepArguments (step: Step): string {
-  const args = step.args;
-  let formattedArgs = '';
+function getTestIcon (testStatus: string): string {
+  let icon = '';
 
-  for (const argument of args) {
-    const wellFormatted = argument.toWellFormed();
-    const argumentIsNumber = (argument && argument !== '' && !isNaN(Number(wellFormatted)));
-    const argumentIsAnArray = (argument && argument.startsWith('[') && argument.endsWith(']'));
-    const argumentIsAnObject = (argument && argument.startsWith('{') && argument.endsWith('}'));
-    const argumentIsTruncatedSchema = (argument && argument.startsWith('{') && argument.endsWith(':'));
-
-    if (argumentIsNumber || argumentIsAnArray) {
-      formattedArgs = formattedArgs.concat(`${wellFormatted}, `);
-    } else if (argumentIsAnObject) {
-      formattedArgs = formattedArgs.concat('[object], ');
-    } else if (argumentIsTruncatedSchema) {
-      formattedArgs = formattedArgs.concat('[schema object], ');
-    } else {
-      // Regular string with double quotes.
-      formattedArgs = formattedArgs.concat(`"${wellFormatted}", `);
-    }
+  switch (testStatus) {
+    case 'passed':
+      icon = '<span class="material-symbols-rounded text-success">check</span>';
+      break;
+    case 'failed':
+      icon = '<span class="material-symbols-rounded text-danger">close</span>';
+      break;
+    case 'pending':
+      icon = '<span class="material-symbols-outlined text-warning">warning</span>';
+      break;
+    default:
+      icon = '<span class="material-symbols-rounded text-info">question_mark</span>';
+      break;
   }
 
-  // Strip off redundant last comma and whitespace from arguments.
-  formattedArgs = formattedArgs.replace(/(, )$/, '');
-
-  return formattedArgs;
+  return icon;
 }

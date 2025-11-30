@@ -66,8 +66,8 @@
         "cspell"
       ],
       "code_actions_on_format": {
-        "source.organizeImports": true,
-        "source.fixAll.eslint": true
+        "source.fixAll.eslint": true,
+        "source.organizeImports": true
       }
     },
     "JavaScript": {

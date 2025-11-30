@@ -6,6 +6,7 @@ setCommonPlugins();
 export const config: CodeceptJS.MainConfig = {
   tests: './tests/**.spec.ts',
   output: './reports',
+  maskSensitiveData: true,
   helpers: {
     REST: {
       endpoint: 'https://reqres.in',

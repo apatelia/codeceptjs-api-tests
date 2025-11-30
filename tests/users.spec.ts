@@ -7,11 +7,14 @@ import { userSchema } from '../schemas/user.schema';
 
 const users = new DataTable([ 'name', 'job' ]);
 const userIdList = new DataTable([ 'id' ]);
+const apiKey = {
+  'x-api-key': 'reqres-free-v1'
+};
 
 generateUserData();
 
 Scenario('List Users', async ({ I }) => {
-  await I.sendGetRequest('/api/users?page=2');
+  await I.sendGetRequest('/api/users?page=2', apiKey);
   I.seeResponseCodeIs(200);
 
   const schema = Joi.object({
@@ -22,14 +25,16 @@ Scenario('List Users', async ({ I }) => {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     total_pages: Joi.number().required(),
     data: Joi.array().items(userSchema).required(),
-    support: supportSchema.required()
+    support: supportSchema.required(),
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    _meta: Joi.object().optional()
   });
 
   I.seeResponseMatchesJsonSchema(schema);
 });
 
 Data(users).Scenario('Create New User', async ({ I, current }) => {
-  const response = await I.sendPostRequest('/api/users', current);
+  const response = await I.sendPostRequest('/api/users', apiKey, current);
   I.seeResponseCodeIsSuccessful();
   I.seeResponseCodeIs(201);
   I.say(`User created with ID: ${response.data.id}`);
@@ -37,7 +42,7 @@ Data(users).Scenario('Create New User', async ({ I, current }) => {
 });
 
 Data(userIdList).Scenario('Get User by ID', async ({ I, current }) => {
-  await I.sendGetRequest(`/api/users/${current.id}`);
+  await I.sendGetRequest(`/api/users/${current.id}`, apiKey);
   I.seeResponseCodeIs(200);
   I.seeResponseContainsJson({
     data: {
@@ -47,7 +52,9 @@ Data(userIdList).Scenario('Get User by ID', async ({ I, current }) => {
 
   const schema = Joi.object({
     data: userSchema.required(),
-    support: supportSchema.required()
+    support: supportSchema.required(),
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    _meta: Joi.object().optional()
   });
 
   I.seeResponseMatchesJsonSchema(schema);
