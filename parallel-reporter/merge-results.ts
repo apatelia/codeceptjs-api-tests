@@ -3,8 +3,9 @@ import fs from 'node:fs';
 import { ParallelReportConfig } from '.';
 import { Stats } from './stats';
 import { TestSuite } from './test-suite';
+import { TestRun } from './test-run';
 
-export async function mergeJsonResults (config: ParallelReportConfig): Promise<TestSuite> {
+export async function mergeJsonResults (config: ParallelReportConfig): Promise<TestRun> {
   const reportDir = config.outputDir;
   const jsonReportFiles = fs.readdirSync(reportDir).filter(file => file.startsWith('thread_report') && file.endsWith('.json'));
 
@@ -13,8 +14,8 @@ export async function mergeJsonResults (config: ParallelReportConfig): Promise<T
     return;
   }
 
-  const mergedSuite = new TestSuite();
-  mergedSuite.endTime = 0;
+  const mergedTestRun = new TestRun();
+  mergedTestRun.endTime = 0;
 
   let totalTests = 0;
   let passedTests = 0;
@@ -24,49 +25,88 @@ export async function mergeJsonResults (config: ParallelReportConfig): Promise<T
   for (const file of jsonReportFiles) {
     const filePath = `${reportDir}/${file}`;
     const content = fs.readFileSync(filePath, 'utf8');
-    const suite = JSON.parse(content);
+    const testRun = JSON.parse(content);
 
     // Update stats.
-    totalTests += suite.stats.totalTests;
-    passedTests += suite.stats.passedTests;
-    failedTests += suite.stats.failedTests;
-    skippedTests += suite.stats.skippedTests;
+    totalTests += testRun.stats.totalTests;
+    passedTests += testRun.stats.passedTests;
+    failedTests += testRun.stats.failedTests;
+    skippedTests += testRun.stats.skippedTests;
 
-    // Add tests.
-    for (const test of suite.tests) {
-      mergedSuite.addTest(test);
-    }
+    // Parse suite.
+    const suites = parseTestSuites(testRun);
 
-    // Add failures.
-    if (suite.failures && suite.failures.length > 0) {
-      for (const failure of suite.failures) {
-        mergedSuite.addFailure(failure);
+    for (const suite of suites) {
+      mergedTestRun.suites.push(suite);
+
+      // Add failures.
+      if (suite.failures && suite.failures.length > 0) {
+        for (const failure of suite.failures) {
+          mergedTestRun.addFailure(failure);
+        }
       }
+
+      // Update start and end time of merged test run.
+      mergedTestRun.startTime = (suite.startTime < mergedTestRun.startTime)
+        ? suite.startTime
+        : mergedTestRun.startTime;
+
+      mergedTestRun.endTime = (suite.endTime > mergedTestRun.endTime)
+        ? suite.endTime
+        : mergedTestRun.endTime;
     }
-
-    // Add hooks.
-    for (const hook of suite.hooks) {
-      mergedSuite.addHook(hook);
-    }
-
-
-    mergedSuite.startTime = (suite.startTime < mergedSuite.startTime)
-      ? suite.startTime
-      : mergedSuite.startTime;
-
-    mergedSuite.endTime = (suite.endTime > mergedSuite.endTime)
-      ? suite.endTime
-      : mergedSuite.endTime;
   }
 
-  mergedSuite.calculateDuration();
+  mergedTestRun.calculateDuration();
 
-  mergedSuite.stats = new Stats(
+  mergedTestRun.stats = new Stats(
     totalTests,
     passedTests,
     failedTests,
     skippedTests
   );
 
-  return mergedSuite;
+  return mergedTestRun;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function parseTestSuites (testRun: any): TestSuite[] {
+  const suites: TestSuite[] = [];
+
+  for (const suite of testRun.suites) {
+    const currentSuite = new TestSuite();
+    currentSuite.setTitle(suite.title);
+    currentSuite.setFileName(suite.fileName);
+
+    for (const tag of suite.tags) {
+      currentSuite.addTag(tag);
+    }
+
+    currentSuite.stats = new Stats(
+      suite.stats.totalTests,
+      suite.stats.passedTests,
+      suite.stats.failedTests,
+      suite.stats.skippedTests
+    );
+
+    for (const hook of suite.hooks) {
+      currentSuite.hooks.push(hook);
+    }
+
+    for (const test of suite.tests) {
+      currentSuite.tests.push(test);
+    }
+
+    for (const failure of suite.failures) {
+      currentSuite.failures.push(failure);
+    }
+
+    currentSuite.startTime = suite.startTime;
+    currentSuite.endTime = suite.endTime;
+    currentSuite.duration = suite.duration;
+
+    suites.push(currentSuite);
+  }
+
+  return suites;
 }

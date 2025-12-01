@@ -2,13 +2,14 @@ import { config as codeceptJsConfig, event, output } from 'codeceptjs';
 import { readdirSync, unlinkSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { threadId } from 'node:worker_threads';
-import { Hook } from './hook';
 import generateReport from './generate-report';
+import { Hook } from './hook';
 import { mergeJsonResults } from './merge-results';
 import { Stats } from './stats';
 import { Step } from './step';
 import { Test } from './test';
 import { TestError } from './test-error';
+import { TestRun } from './test-run';
 import { TestSuite } from './test-suite';
 
 export interface ParallelReportConfig {
@@ -139,26 +140,61 @@ function parallelReport (config: ParallelReportConfig): void {
     projectName: config?.projectName || codeceptJsConfig.get().name
   };
 
-  let testSuite: TestSuite;
+  let testRun: TestRun;
   let totalTests = 0;
   let passedTests = 0;
   let failedTests = 0;
   let skippedTests = 0;
-  let currentHook: Hook | null = null;
-  let currentTest: Test | null = null;
+  let currentSuite: TestSuite;
+  let currentTest: Test;
+  let currentHook: Hook;
+  let hookIsRunning = false;
 
   event.dispatcher.on(event.all.before, () => {
-    testSuite = new TestSuite();
+    testRun = new TestRun();
+  });
+
+  event.dispatcher.on(event.suite.before, (suite) => {
+    const shortenedFileName = suite.file.replace(process.cwd(), '');
+    const newSuite = new TestSuite(suite.title, shortenedFileName);
+
+    for (const tag of suite.tags) {
+      newSuite.addTag(tag);
+    }
+
+    currentSuite = newSuite;
+    output.debug(`Before suite: ${shortenedFileName} - ${suite.title}`);
+  });
+
+  event.dispatcher.on(event.suite.after, (suite) => {
+    output.debug(`After suite: ${suite.file} - ${currentSuite?.tests.length} tests executed.`);
+    currentSuite.endTime = Date.now();
+    currentSuite.calculateDuration();
+
+    const suiteStats = new Stats(
+      currentSuite.tests.length,
+      currentSuite.tests.filter(test => test.status === 'passed').length,
+      currentSuite.tests.filter(test => test.status === 'failed').length,
+      currentSuite.tests.filter(test => test.status === 'pending').length
+    );
+
+    currentSuite.stats = suiteStats;
+
+    testRun.suites.push(currentSuite);
+    currentSuite = null;
   });
 
   event.dispatcher.on(event.hook.started, (hook) => {
+    output.debug(`Hook started: ${hook.title}`);
     const newHook = new Hook(hook.title);
 
     currentHook = newHook;
+    hookIsRunning = true;
   });
 
   event.dispatcher.on(event.hook.finished, (hook) => {
-    const finishedHook = currentHook ?? new Hook(hook.title);
+    output.debug(`Hook finished: ${hook.title}`);
+    const finishedHook = currentHook;
     finishedHook.endTime = Date.now();
     finishedHook.calculateDuration();
 
@@ -170,12 +206,10 @@ function parallelReport (config: ParallelReportConfig): void {
       : 'passed';
 
     finishedHook.location = hook.runnable.file;
-    finishedHook.body = hook.runnable.body;
-
     finishedHook.error = getTestErrors(hook.runnable);
 
     if (hook.title.includes('before all') || hook.title.includes('after all')) {
-      testSuite.addHook(finishedHook);
+      currentSuite.addHook(finishedHook);
     }
 
     if (currentTest) {
@@ -183,44 +217,116 @@ function parallelReport (config: ParallelReportConfig): void {
     }
 
     currentHook = null;
+    hookIsRunning = false;
+  });
+
+  event.dispatcher.on(event.test.before, (test) => {
+    output.debug(`Before test: ${test.title}`);
+
+    const newTest = new Test(test.title);
+    currentTest = newTest;
+
+    totalTests += 1;
+  });
+
+  event.dispatcher.on(event.test.after, (test) => {
+    output.debug(`After test: ${test.title}`);
+
+    currentTest = null;
+  });
+
+  event.dispatcher.on(event.test.started, (test) => {
+    output.debug(`Test started: ${test.title}`);
+    currentTest.startTime = Date.now();
+  });
+
+  event.dispatcher.on(event.test.passed, (test) => {
+    output.debug(`Test passed: ${test.title}`);
+    passedTests += 1;
+  });
+
+  event.dispatcher.on(event.test.failed, (test) => {
+    output.debug(`Test failed: ${test.title}`);
+    failedTests += 1;
+
+    currentTest.error = getTestErrors(test);
+    currentSuite.addFailure(currentTest.error);
+  });
+
+  event.dispatcher.on(event.test.skipped, (test) => {
+    output.debug(`Test skipped: ${test.title}`);
+    skippedTests += 1;
+    totalTests += 1;
+
+    const skippedTest = new Test(test.title);
+    currentSuite.addTest(skippedTest);
+
+    skippedTest.status = test.state;
+    skippedTest.tags = test.tags;
+    skippedTest.file = test.file;
+
+    skippedTest.skipInfo = (test.opts.skipInfo?.message)
+      ? test.opts.skipInfo.message
+      : 'No additional information available for this skipped test.';
+  });
+
+  event.dispatcher.on(event.test.finished, (test) => {
+    output.debug(`Test finished: ${test.title}`);
+    currentTest.endTime = Date.now();
+    currentTest.calculateDuration();
+    currentTest.status = test.state;
+    currentTest.tags = test.tags;
+    currentTest.file = test.file;
+    currentTest.error = getTestErrors(test);
+    currentTest.warnings = test.warnings;
+    currentTest.hooks = (currentTest?.hooks)
+      ? currentTest.hooks
+      : [];
+
+    currentTest.sortStepsByStartTime();
+
+    currentSuite.addTest(currentTest);
   });
 
   event.dispatcher.on(event.step.started, (step) => {
+    output.debug(`Step started: ${step.name}`);
     const newStep = new Step(step.name);
 
-    if (currentTest) {
+    if (hookIsRunning && currentHook) {
+      currentHook.steps.push(newStep);
+    } else if (currentTest) {
       currentTest.steps.push(newStep);
     }
 
-    if (currentHook) {
-      currentHook.steps.push(newStep);
-    }
+  });
+
+  event.dispatcher.on(event.step.passed, (step) => {
+    output.debug(`Step passed: ${step.name}`);
+  });
+
+  event.dispatcher.on(event.step.failed, (step) => {
+    output.debug(`Step failed: ${step.name}`);
   });
 
   event.dispatcher.on(event.step.finished, (step) => {
+    output.debug(`Step finished: ${step.name}`);
     let finishedStep: Step | undefined;
 
-    if (currentTest && currentTest.steps && currentTest.steps.length > 0) {
-      finishedStep = currentTest.steps.findLast((s) => s.name === step.name);
-
-      if (!finishedStep) {
-        finishedStep = new Step(step.name);
-
-        if (currentTest) {
-          currentTest.steps.push(finishedStep);
-        }
+    if (hookIsRunning && currentHook && currentHook.steps && currentHook.steps.length > 0) {
+      finishedStep = currentHook.steps.findLast((s) => s.name === step.name);
+    } else {
+      if (currentTest && currentTest.steps && currentTest.steps.length > 0) {
+        finishedStep = currentTest.steps.findLast((s) => s.name === step.name);
       }
     }
 
-    if (currentHook && currentHook.steps && currentHook.steps.length > 0) {
-      finishedStep = currentHook.steps.findLast((s) => s.name === step.name);
+    if (!finishedStep) {
+      finishedStep = new Step(step.name);
 
-      if (!finishedStep) {
-        finishedStep = new Step(step.name);
-
-        if (currentHook) {
-          currentHook.steps.push(finishedStep);
-        }
+      if (hookIsRunning && currentHook) {
+        currentHook.steps.push(finishedStep);
+      } else if (currentTest) {
+        currentTest.steps.push(finishedStep);
       }
     }
 
@@ -232,75 +338,11 @@ function parallelReport (config: ParallelReportConfig): void {
     finishedStep.args = getStepArguments(step);
   });
 
-  event.dispatcher.on(event.test.before, () => {
-    currentHook = null;
-    currentTest = null;
-  });
-
-  event.dispatcher.on(event.test.started, (test) => {
-    const newTest = new Test(test.title);
-    testSuite.addTest(newTest);
-    currentTest = newTest;
-
-    totalTests++;
-  });
-
-  event.dispatcher.on(event.test.finished, (test) => {
-    const finishedTest = currentTest ?? testSuite.tests.findLast((t) => t.title === test.title);
-
-    if (!finishedTest) {
-      output.error(`Parallel Report: Could not find finished test for title '${test.title}'`);
-      return;
-    }
-
-    finishedTest.endTime = Date.now();
-    finishedTest.calculateDuration();
-
-    finishedTest.status = test.state;
-    finishedTest.body = test.body;
-    finishedTest.tags = test.tags;
-    finishedTest.file = test.file;
-    finishedTest.steps = currentTest.steps;
-    finishedTest.error = getTestErrors(test);
-    finishedTest.warnings = test.warnings;
-    finishedTest.hooks = (currentTest?.hooks)
-      ? currentTest.hooks
-      : [];
-
-    if (finishedTest.status === 'failed') {
-      failedTests++;
-      testSuite.addFailure(finishedTest.error);
-    } else {
-      passedTests++;
-    }
-
-    currentTest = null;
-  });
-
-  event.dispatcher.on(event.test.skipped, (test) => {
-    const skippedTest = new Test(test.title);
-    testSuite.addTest(skippedTest);
-
-    skippedTest.status = test.state;
-    skippedTest.body = test.body;
-    skippedTest.tags = test.tags;
-    skippedTest.file = test.file;
-
-    skippedTest.skipInfo = (test.opts.skipInfo?.message)
-      ? test.opts.skipInfo.message
-      : 'No additional information available for this pending test.';
-
-    skippedTests++;
-
-    // Skipped tests never start, so add them to total here.
-    totalTests++;
-  });
-
   event.dispatcher.on(event.all.after, () => {
-    testSuite.endTime = Date.now();
-    testSuite.calculateDuration();
+    testRun.endTime = Date.now();
+    testRun.calculateDuration();
 
-    testSuite.stats = new Stats(
+    testRun.stats = new Stats(
       totalTests,
       passedTests,
       failedTests,
@@ -308,19 +350,20 @@ function parallelReport (config: ParallelReportConfig): void {
     );
 
     const reportPath = `${effectiveConfig.outputDir}/thread_report${threadId}.json`;
-    writeFileSync(reportPath, JSON.stringify(testSuite, null, 2));
+    writeFileSync(reportPath, JSON.stringify(testRun, null, 2));
   });
 
   event.dispatcher.on(event.workers.result, async () => {
-    const mergedTestSuite = await mergeJsonResults(effectiveConfig);
+    const mergedResults = await mergeJsonResults(effectiveConfig);
 
-    if (mergedTestSuite) {
+    if (mergedResults) {
       // TODO: remove after testing.
       const reportPath = `${effectiveConfig.outputDir}/merged_suite.json`;
-      writeFileSync(reportPath, JSON.stringify(mergedTestSuite, null, 2));
+      writeFileSync(reportPath, JSON.stringify(mergedResults, null, 2));
 
       try {
-        await generateReport(mergedTestSuite, effectiveConfig);
+        // output.error('Need to rework on HTML report.');
+        await generateReport(mergedResults, effectiveConfig);
       } catch (error) {
         if (error instanceof Error) {
           output.error('Parallel Report: Failed to generate report.');

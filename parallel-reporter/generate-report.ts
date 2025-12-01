@@ -3,10 +3,11 @@ import { format } from 'date-fns';
 import { writeFileSync } from 'node:fs';
 import path from 'node:path';
 import type { ParallelReportConfig } from '.';
+import { TestRun } from './test-run';
 import { TestSuite } from './test-suite';
 
 export default async function generateReport (
-  suite: TestSuite,
+  testRun: TestRun,
   config: ParallelReportConfig
 ): Promise<void> {
   const htmlHead = `
@@ -23,7 +24,7 @@ export default async function generateReport (
     </head>
   `;
 
-  const reportGenerationTime = format(new Date(suite.endTime), 'dd MMM yyyy, hh:mm:ss a');
+  const reportGenerationTime = format(new Date(testRun.endTime), 'dd MMM yyyy, hh:mm:ss a');
 
   let html = htmlHead;
   html += '  <body>';
@@ -37,59 +38,59 @@ export default async function generateReport (
   html += '         <span class="col text-center">';
   html += '           <span class="material-symbols-rounded align-bottom text-info">schedule</span>';
   html += '           <span class="p-1 fw-bold">Duration:</span>';
-  html += `           <span>${(suite.duration / 1000).toFixed(2)} s</span>`;
+  html += `           <span>${(testRun.duration / 1000).toFixed(2)} s</span>`;
   html += '         </span>';
   html += '         <span class="col text-center">';
   html += '           <span class="material-symbols-rounded align-bottom text-primary">experiment</span>';
   html += '           <span class="p-1 fw-bold">Tests:</span>';
-  html += `           <span>${suite.stats.totalTests}</span>`;
+  html += `           <span>${testRun.stats.totalTests}</span>`;
   html += '         </span>';
   html += '         <span class="col text-center">';
   html += '           <span class="material-symbols-rounded align-bottom text-success">verified</span>';
   html += '           <span class="p-1 fw-bold">Passed:</span>';
-  html += `           <span>${suite.stats.passedTests}</span>`;
+  html += `           <span>${testRun.stats.passedTests}</span>`;
   html += '         </span>';
   html += '         <span class="col text-center">';
   html += '           <span class="material-symbols-rounded align-bottom text-danger">dangerous</span>';
   html += '           <span class="p-1 fw-bold">Failed:</span>';
-  html += `           <span>${suite.stats.failedTests}</span>`;
+  html += `           <span>${testRun.stats.failedTests}</span>`;
   html += '         </span>';
   html += '         <span class="col text-center">';
   html += '           <span class="material-symbols-rounded align-bottom text-warning">hourglass_top</span>';
   html += '           <span class="p-1 fw-bold">Skipped:</span>';
-  html += `           <span>${suite.stats.skippedTests}</span>`;
+  html += `           <span>${testRun.stats.skippedTests}</span>`;
   html += '         </span>';
   html += '       </div>';
   html += '     </div>';
   html += '   </div>';
 
-  const testGroupedByFiles = Object.groupBy(suite.tests, (test) => test.file);
-
   html += '   <div class="container mt-4">'; // Start of report body container
 
-  let fileCount = 1;
+  let suiteCount = 1;
   let accordionCollapseCount = 1;
   let errorCount = 1;
 
-  for (const file in testGroupedByFiles) {
-    const tests = testGroupedByFiles[ file ];
-    const shortenedFileName = file.replace(process.cwd(), '');
+  const testSuites: TestSuite[] = testRun.suites;
 
-    const fileExecutionDuration = tests.map((test) => test.duration)
-      .reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+  for (const suite of testSuites) {
+    const suiteFileName = suite.fileName;
+
+    const suiteExecutionDuration = suite.duration;
 
     html += '   <div class="d-grid gap-2">';
-    html += `     <button class="btn btn-primary rounded-0" type="button" data-bs-toggle="collapse" data-bs-target="#collapse${fileCount}" aria-expanded="false" aria-controls="collapse${fileCount}">`;
+    html += `     <button class="btn btn-primary rounded-0" type="button" data-bs-toggle="collapse" data-bs-target="#collapse${suiteCount}" aria-expanded="false" aria-controls="collapse${suiteCount}">`;
     html += '       <div class="hstack gap-3">';
-    html += `         <div class="p-2">${shortenedFileName}</div>`;
+    html += `         <div class="p-2">${suiteFileName}</div>`;
     html += '         <div class="p-2 ms-auto">&nbsp;</div>';
-    html += `         <div class="p-2">${(fileExecutionDuration / 1000).toFixed(2)}s</div>`;
+    html += `         <div class="p-2">${(suiteExecutionDuration / 1000).toFixed(2)}s</div>`;
     html += '       </div>';
     html += '     </button>';
     html += '   </div>';
 
-    html += `   <div class="collapse rounded-0 show" id="collapse${fileCount}">`;
-    html += `<div class="accordion rounded-0" id="accordion${fileCount}">`;
+    html += `   <div class="collapse rounded-0 show" id="collapse${suiteCount}">`;
+    html += `<div class="accordion rounded-0" id="accordion${suiteCount}">`;
+
+    const tests = suite.tests;
 
     if (tests && tests.length > 0) {
       for (const test of tests) {
@@ -104,7 +105,7 @@ export default async function generateReport (
         html += '</button>';
         html += '</h2>'; // End of accordion-header
 
-        html += `<div id="accordionCollapse${accordionCollapseCount}" class="accordion-collapse collapse" data-bs-parent="#accordion${fileCount}">`;
+        html += `<div id="accordionCollapse${accordionCollapseCount}" class="accordion-collapse collapse" data-bs-parent="#accordion${suiteCount}">`;
         html += '<div class="accordion-body">'; // Start of accordion-body
 
         if (test.tags && test.tags.length > 0) {
@@ -123,10 +124,7 @@ export default async function generateReport (
 
         html += '<ul class="list-group">';
 
-        // Sort steps by their start time, so they appear in correct order in report.
-        const sortedSteps = test.steps.sort((prev, next) => prev.startTime - next.startTime);
-
-        for (const step of sortedSteps) {
+        for (const step of test.steps) {
           const stepStatusIcon = step.status === 'passed'
             ? '<span class="material-symbols-rounded align-bottom text-success">check_small</span>'
             : step.status === 'failed'
@@ -205,18 +203,18 @@ export default async function generateReport (
     html += '   </div>'; // End of collapse
     html += '   <br/>';
 
-    fileCount++;
+    suiteCount++;
   }
 
   html += '   </div>'; // End of report body container
 
-  const failures = suite.failures;
+  const failures = testRun.failures;
 
   if (failures && failures.length > 0) {
     html += '<div class="container mt-4">'; // Start of failures container
 
     html += '   <div class="d-grid gap-2">';
-    html += `     <button class="btn btn-primary text-start rounded-0" type="button" data-bs-toggle="collapse" data-bs-target="#collapse${fileCount}" aria-expanded="false" aria-controls="collapse${fileCount}">`;
+    html += `     <button class="btn btn-primary text-start rounded-0" type="button" data-bs-toggle="collapse" data-bs-target="#collapse${suiteCount}" aria-expanded="false" aria-controls="collapse${suiteCount}">`;
     html += '       <div class="hstack gap-3">';
     html += '         <div class="p-2"><span class="material-symbols-rounded position-absolute translate-middle">error</span></div>';
     html += '         <div>Failures</div>';
@@ -226,9 +224,9 @@ export default async function generateReport (
     html += '     </button>';
     html += '   </div>';
 
-    html += `<div class="collapse rounded-0 show" id="collapse${fileCount}">`; // Start of failures collapse
+    html += `<div class="collapse rounded-0 show" id="collapse${suiteCount}">`; // Start of failures collapse
 
-    html += `<div class="accordion rounded-0" id="accordion${fileCount}">`; // Start of failures accordion
+    html += `<div class="accordion rounded-0" id="accordion${suiteCount}">`; // Start of failures accordion
 
     let failureCount = 10001;
 
@@ -239,11 +237,6 @@ export default async function generateReport (
 
       html += '<h2 class="accordion-header rounded-0">'; // Start of accordion-header
       html += `<button class="accordion-button rounded-0 collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionCollapse${accordionCollapseCount}" aria-expanded="false" aria-controls="accordionCollapse${accordionCollapseCount}">`;
-      // html += '       <div class="hstack gap-3">';
-      // html += `         <div class="p-2">${shortenedFileName}</div>`;
-      // html += `         <div class="p-2 m-auto">${error.testName}</div>`;
-      // html += `         <div class="p-2">${error.message}</div>`;
-      // html += '       </div>';
       html += '<ul class="list-group list-group-horizontal">';
       html += `<li class="list-group-item flex-fill">${shortenedFileName}</li>`;
       html += `<li class="list-group-item flex-fill text-wrap">${error.testName}</li>`;
@@ -252,7 +245,7 @@ export default async function generateReport (
       html += '</button>';
       html += '</h2>'; // End of accordion-header
 
-      html += `<div id="accordionCollapse${accordionCollapseCount}" class="accordion-collapse collapse p-3" data-bs-parent="#accordion${fileCount}">`; // Start of failure accordion-body-collapse
+      html += `<div id="accordionCollapse${accordionCollapseCount}" class="accordion-collapse collapse p-3" data-bs-parent="#accordion${suiteCount}">`; // Start of failure accordion-body-collapse
       html += '<div class="accordion-body">'; // Start of accordion-body
 
       html += '<div class="mt-3">'; // Start of Error container

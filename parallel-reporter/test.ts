@@ -5,7 +5,6 @@ import { TestError } from './test-error';
 export class Test {
   title: string;
   status: string;
-  body: string;
   tags: string[];
   steps: Step[];
   startTime: number;
@@ -22,7 +21,6 @@ export class Test {
     this.startTime = Date.now();
     this.endTime = Date.now();
     this.status = 'just started';
-    this.body = '';
     this.tags = [];
     this.steps = [];
     this.error = null;

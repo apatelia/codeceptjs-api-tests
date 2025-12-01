@@ -4,6 +4,9 @@ import { Test } from './test';
 import { TestError } from './test-error';
 
 export class TestSuite {
+  title: string;
+  fileName: string;
+  tags: string[];
   stats: Stats;
   tests: Test[];
   failures: TestError[];
@@ -12,8 +15,11 @@ export class TestSuite {
   endTime: number;
   duration: number;
 
-  constructor () {
+  constructor (title = '', fileName = '') {
+    this.title = title;
+    this.fileName = fileName;
     this.stats = null;
+    this.tags = [];
     this.tests = [];
     this.failures = [];
     this.hooks = [];
@@ -25,6 +31,18 @@ export class TestSuite {
 
   public calculateDuration (): void {
     this.duration = this.endTime - this.startTime;
+  }
+
+  public setTitle (title: string): void {
+    this.title = title;
+  }
+
+  public setFileName (fileName: string): void {
+    this.fileName = fileName;
+  }
+
+  public addTag (tag: string): void {
+    this.tags.push(tag);
   }
 
   public addTest (test: Test): void {
