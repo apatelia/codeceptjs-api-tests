@@ -4,6 +4,10 @@ BeforeSuite(({ I }) => {
   I.say('Before all tests in the suite');
 });
 
+BeforeSuite(({ I }) => {
+  I.say('Another "Before all tests" hook in the suite');
+});
+
 Before(({ I }) => {
   I.say('Before each test');
 });
@@ -30,4 +34,8 @@ After(({ I }) => {
 
 AfterSuite(({ I }) => {
   I.say('After all tests in the suite');
+});
+
+AfterSuite(({ I }) => {
+  I.say('Another "After all tests" hook in the suite');
 });

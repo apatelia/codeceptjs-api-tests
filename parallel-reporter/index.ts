@@ -357,12 +357,7 @@ function parallelReport (config: ParallelReportConfig): void {
     const mergedResults = await mergeJsonResults(effectiveConfig);
 
     if (mergedResults) {
-      // TODO: remove after testing.
-      const reportPath = `${effectiveConfig.outputDir}/merged_suite.json`;
-      writeFileSync(reportPath, JSON.stringify(mergedResults, null, 2));
-
       try {
-        // output.error('Need to rework on HTML report.');
         await generateReport(mergedResults, effectiveConfig);
       } catch (error) {
         if (error instanceof Error) {

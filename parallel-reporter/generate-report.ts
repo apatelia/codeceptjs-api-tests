@@ -90,6 +90,58 @@ export default async function generateReport (
     html += `   <div class="collapse rounded-0 show" id="collapse${suiteCount}">`;
     html += `<div class="accordion rounded-0" id="accordion${suiteCount}">`;
 
+    const beforeSuiteHooks = suite.hooks.filter((hook) => hook.type === 'BeforeSuite');
+
+    if (beforeSuiteHooks.length > 0) {
+      html += '<div class="accordion-item rounded-0">'; // Start of accordion-item
+      html += '<h2 class="accordion-header rounded-0">'; // Start of accordion-header
+      html += `<button class="accordion-button rounded-0 collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionCollapse${accordionCollapseCount}" aria-expanded="false" aria-controls="accordionCollapse${accordionCollapseCount}">`;
+      html += '     <span class="text-wrap fw-bold p-2">Before Suite Hooks</span>';
+      html += '</button>';
+      html += '</h2>'; // End of accordion-header
+
+      html += `<div id="accordionCollapse${accordionCollapseCount}" class="accordion-collapse collapse" data-bs-parent="#accordion${suiteCount}">`;
+      html += '<div class="accordion-body">'; // Start of accordion-body
+      html += '<div class="mt-3">'; // Start of BeforeSuite container
+
+      let currentHookNumber = 1;
+
+      for (const hook of beforeSuiteHooks) {
+        html += '<div class="d-flex gap-0 column-gap-1">'; // Start of container for hook
+        html += '<table class="table table-bordered table-stripped">';
+        const icon = getTestIcon(hook.status);
+        html += '<thead><tr><th>';
+        html += '       <div class="hstack">';
+        html += `         <div class="pt-2">${icon}</div>`;
+        html += `         <div>Hook #${currentHookNumber++}</div>`;
+        html += '         <div>&nbsp;</div>';
+        html += `         <div class="ms-auto">${(hook.duration / 1000).toFixed(2)}s</div>`;
+        html += '       </div>';
+        html += '</th></tr></thead>';
+        html += '<tbody>';
+        for (const step of hook.steps) {
+          const stepStatusIcon = step.status === 'passed'
+            ? '<span class="material-symbols-rounded align-bottom text-success">check_small</span>'
+            : step.status === 'failed'
+              ? '<span class="material-symbols-rounded align-bottom text-danger">close_small</span>'
+              : '<span class="material-symbols-rounded align-bottom text-warning">exclamation</span>';
+          const completeStep = `${step.actor}.${step.name} (${step.args})`;
+          html += '<tr>';
+          html += `<td><span>${stepStatusIcon}</span><span><code>${completeStep}</code></span></td>`;
+          html += '</tr>';
+        }
+        html += '</tbody>';
+        html += '</table>';
+        html += '</div>'; // End of container for hook
+      }
+
+      html += '</div>'; // End of BeforeSuite container inside accordion-body
+      html += '</div>'; // End of accordion-body
+      html += '</div>'; // End of accordion-item
+      html += '   </div>'; // End of collapse
+      accordionCollapseCount++;
+    }
+
     const tests = suite.tests;
 
     if (tests && tests.length > 0) {
@@ -122,7 +174,33 @@ export default async function generateReport (
           html += '</div>'; // End of container for tags
         }
 
+        const beforeEachHooks = test.hooks.filter((hook) => hook.type === 'Before');
+
+        for (const hook of beforeEachHooks) {
+          html += '<div class="d-flex gap-0 column-gap-1">';
+          html += '<table class="table table-bordered table-stripped">';
+          html += '<thead><tr><th>Before Test Hook</th></tr></thead>';
+          html += '<tbody>';
+          for (const step of hook.steps) {
+            const stepStatusIcon = step.status === 'passed'
+              ? '<span class="material-symbols-rounded align-bottom text-success">check_small</span>'
+              : step.status === 'failed'
+                ? '<span class="material-symbols-rounded align-bottom text-danger">close_small</span>'
+                : '<span class="material-symbols-rounded align-bottom text-warning">exclamation</span>';
+            const completeStep = `${step.actor}.${step.name} (${step.args})`;
+            html += '<tr>';
+            html += `<td><span>${stepStatusIcon}</span><span><code>${completeStep}</code></span></td>`;
+            html += '</tr>';
+          }
+          html += '</tbody>';
+          html += '</table>';
+          html += '</div>'; // End of container for hook
+        }
+
         html += '<ul class="list-group">';
+        html += '<li class="list-group-item">';
+        html += '<span class="fw-bold">Steps</span>';
+        html += '</li>';
 
         for (const step of test.steps) {
           const stepStatusIcon = step.status === 'passed'
@@ -130,11 +208,11 @@ export default async function generateReport (
             : step.status === 'failed'
               ? '<span class="material-symbols-rounded align-bottom text-danger">close_small</span>'
               : '<span class="material-symbols-rounded align-bottom text-warning">exclamation</span>';
-          const completeStep = `${step.actor}.${step.name}(${step.args})`;
+          const completeStep = `${step.actor}.${step.name} (${step.args})`;
           html += `<li class="list-group-item">
-            <span>${stepStatusIcon}</span>
-          <span><code>${completeStep}</code></span>
-          </li>`;
+          <span>${stepStatusIcon}</span>
+            <span><code>${completeStep}</code></span>
+              </li>`;
         }
 
         if (test.status === 'pending') {
@@ -145,6 +223,31 @@ export default async function generateReport (
         }
 
         html += '</ul>'; // End of list-group.
+
+        const afterEachHooks = test.hooks.filter((hook) => hook.type === 'After');
+
+        for (const hook of afterEachHooks) {
+          html += '<div class="d-flex gap-0 column-gap-1 mt-3">';
+          html += '<table class="table table-bordered table-stripped">';
+          html += '<thead><tr><th>After Test Hook</th></tr></thead>';
+          html += '<tbody>';
+          for (const step of hook.steps) {
+            const stepStatusIcon = step.status === 'passed'
+              ? '<span class="material-symbols-rounded align-bottom text-success">check_small</span>'
+              : step.status === 'failed'
+                ? '<span class="material-symbols-rounded align-bottom text-danger">close_small</span>'
+                : '<span class="material-symbols-rounded align-bottom text-warning">exclamation</span>';
+            const completeStep = `${step.actor}.${step.name} (${step.args})`;
+            html += '<tr>';
+            html += `<td><span>${stepStatusIcon}</span><span><code>${completeStep}</code></span></td>`;
+            html += '</tr>';
+          }
+          html += '</tbody>';
+          html += '</table>';
+          html += '</div>'; // End of container for hook
+        }
+
+        html += '<ul class="list-group">';
 
         if (test.error) {
           const error = test.error;
@@ -197,6 +300,58 @@ export default async function generateReport (
         html += '</div>'; // End of accordion-item
         accordionCollapseCount++;
       }
+    }
+
+    const afterSuiteHooks = suite.hooks.filter((hook) => hook.type === 'AfterSuite');
+
+    if (afterSuiteHooks.length > 0) {
+      html += '<div class="accordion-item rounded-0">'; // Start of accordion-item
+      html += '<h2 class="accordion-header rounded-0">'; // Start of accordion-header
+      html += `<button class="accordion-button rounded-0 collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionCollapse${accordionCollapseCount}" aria-expanded="false" aria-controls="accordionCollapse${accordionCollapseCount}">`;
+      html += '     <span class="text-wrap fw-bold p-2">After Suite Hooks</span>';
+      html += '</button>';
+      html += '</h2>'; // End of accordion-header
+
+      html += `<div id="accordionCollapse${accordionCollapseCount}" class="accordion-collapse collapse" data-bs-parent="#accordion${suiteCount}">`;
+      html += '<div class="accordion-body">'; // Start of accordion-body
+      html += '<div class="mt-3">'; // Start of BeforeSuite container
+
+      let currentHookNumber = 1;
+
+      for (const hook of afterSuiteHooks) {
+        html += '<div class="d-flex gap-0 column-gap-1">'; // Start of container for hook
+        html += '<table class="table table-bordered table-stripped">';
+        const icon = getTestIcon(hook.status);
+        html += '<thead><tr><th>';
+        html += '       <div class="hstack">';
+        html += `         <div class="pt-2">${icon}</div>`;
+        html += `         <div>Hook #${currentHookNumber++}</div>`;
+        html += '         <div>&nbsp;</div>';
+        html += `         <div class="ms-auto">${(hook.duration / 1000).toFixed(2)}s</div>`;
+        html += '       </div>';
+        html += '</th></tr></thead>';
+        html += '<tbody>';
+        for (const step of hook.steps) {
+          const stepStatusIcon = step.status === 'passed'
+            ? '<span class="material-symbols-rounded align-bottom text-success">check_small</span>'
+            : step.status === 'failed'
+              ? '<span class="material-symbols-rounded align-bottom text-danger">close_small</span>'
+              : '<span class="material-symbols-rounded align-bottom text-warning">exclamation</span>';
+          const completeStep = `${step.actor}.${step.name} (${step.args})`;
+          html += '<tr>';
+          html += `<td><span>${stepStatusIcon}</span><span><code>${completeStep}</code></span></td>`;
+          html += '</tr>';
+        }
+        html += '</tbody>';
+        html += '</table>';
+        html += '</div>'; // End of container for hook
+      }
+
+      html += '</div>'; // End of BeforeSuite container inside accordion-body
+      html += '</div>'; // End of accordion-body
+      html += '</div>'; // End of accordion-item
+      html += '   </div>'; // End of collapse
+      accordionCollapseCount++;
     }
 
     html += '   </div>'; // End of accordion

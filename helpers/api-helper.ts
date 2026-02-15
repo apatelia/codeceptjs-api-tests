@@ -10,14 +10,14 @@ class ApiHelper extends Helper {
    *
    *
    * ```js
-   * * // This schema defines only the required fields.
+   * // This schema defines only the required fields.
    * const requiredFieldsSchema = joi.object({
    *   name: joi.string().required(),
    *   age: joi.number().required()
    * });
    *
-   * * // Assume that response is { name: 'jon', age: 30, city: 'New York' }
-   * * // Below assertion will pass, even if the response contains additional 'city' property.
+   * // Assume that response is { name: 'jon', age: 30, city: 'New York' }
+   * // Below assertion will pass, even if the response contains additional 'city' property.
    * I.seeResponseMatchesPartialJsonSchema(requiredFieldsSchema);
    *
    * ```
@@ -37,7 +37,7 @@ class ApiHelper extends Helper {
    * I.seeResponseContentTypeIs('application/json');
    * I.seeResponseContentTypeIs('application/xml');
    * ```
-   * @param contentType - The expected content type to compare against the response's `Content-Type` header.
+   * @param {string} contentType - The expected content type to compare against the response's `Content-Type` header.
    * @throws {AssertionError} Throws an assertion error if the response's `Content-Type` does not match the expected value.
    */
   seeResponseContentTypeIs (contentType: string): void {
@@ -54,8 +54,8 @@ class ApiHelper extends Helper {
    * I.seeResponseHeaderContainsKey('content-length');
    * I.seeResponseHeaderContainsKey('x-powered-by', 'Apigee');
    * ```
-   * @param key - The name of the response header to check for existence.
-   * @param value - (Optional) The value that the header should include. If provided, the assertion checks that the header's value contains this string.
+   * @param {string} key - The name of the response header to check for existence.
+   * @param {string} value - (Optional) The value that the header should include. If provided, the assertion checks that the header's value contains this string.
    * @throws AssertionError if the header is not present, or if the value does not match when specified.
    */
   seeResponseHeaderContainsKey (key: string, value?: string): void {
@@ -70,8 +70,8 @@ class ApiHelper extends Helper {
 
   /**
    * Sends a GET request and measures the time taken for the request.
-   * @param url - The URL to send the GET request to.
-   * @param headers - Optional headers to include in the request.
+   * @param {string} url - The URL to send the GET request to.
+   * @param {any} headers - Optional headers to include in the request.
    * @returns The response from the GET request.
    *
    * ```js
@@ -93,8 +93,13 @@ class ApiHelper extends Helper {
   /**
    * Retrieves the value of a specified field from the JSON response data.
    *
+   * If the specified field does not exist in the response data, 'undefined' will be returned.
+   *
+   * @param {string} field - The name/json-path of the field to extract from the response data.
+   * @returns {any} The value associated with the specified field in the response data, or `undefined` if the field does not exist.
+   *
    * ```js
-   * * // Assuming the response data is structured like this:
+   * // Assuming the response data is structured like this:
    * {
    *   "companyName": "An Organization",
    *   "staff": [
@@ -115,23 +120,18 @@ class ApiHelper extends Helper {
    *   }
    * }
    *
-   * * // To grab the 'companyName' field from the response data:
+   * // To grab the 'companyName' field from the response data:
    * const name = await I.grabFieldFromResponse('companyName');
    *
-   * * // To grab the name of the first staff member:
+   * // To grab the name of the first staff member:
    * const firstStaffName = await I.grabFieldFromResponse('staff.0.name');
    *
-   * * // To grab the email from the contact information:
+   * // To grab the email from the contact information:
    * const contactEmail = await I.grabFieldFromResponse('contact.email');
    *
-   * * // To grab the entire 'contact' object:
+   * // To grab the entire 'contact' object:
    * const contactInfo = await I.grabFieldFromResponse('contact');
    * ```
-   *
-   * If the specified field does not exist in the response data, 'undefined' will be returned.
-   *
-   * @param field - The name/json-path of the field to extract from the response data.
-   * @returns The value associated with the specified field in the response data, or `undefined` if the field does not exist.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async grabFieldFromResponse (field: string): Promise<any> {
@@ -153,10 +153,10 @@ class ApiHelper extends Helper {
 
   /**
    * Retrieves the response time from the headers.
-   * @returns The response time in milliseconds.
+   * @returns {number} The response time in milliseconds.
    *
    * ```js
-   * * // Example usage:
+   * // Example usage:
    * const responseTime = await I.grabResponseTime();
    * ```
    */

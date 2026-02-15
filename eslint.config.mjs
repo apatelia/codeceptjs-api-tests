@@ -4,7 +4,7 @@ import stylistic from "@stylistic/eslint-plugin";
 import checkFile from "eslint-plugin-check-file";
 import unusedImports from "eslint-plugin-unused-imports";
 import globals from "globals";
-import teslint from "typescript-eslint";
+import eslintTs from "typescript-eslint";
 
 export default [
   {
@@ -29,7 +29,7 @@ export default [
   },
   cSpellConfigs.recommended,
   eslintJs.configs.recommended,
-  ...teslint.configs.recommended,
+  ...eslintTs.configs.recommended,
   {
     plugins: {
       "@stylistic": stylistic,
