@@ -1,7 +1,7 @@
-Feature('users').tag('@users');
+Feature('Users API').tag('@users');
 
 import { faker } from '@faker-js/faker';
-import Joi from 'joi';
+import { z } from 'zod';
 import { supportSchema } from '../schemas/support.schema';
 import { userSchema } from '../schemas/user.schema';
 
@@ -17,20 +17,20 @@ Scenario('List Users', async ({ I }) => {
   await I.sendGetRequest('/api/users?page=2', apiKey);
   I.seeResponseCodeIs(200);
 
-  const schema = Joi.object({
-    page: Joi.number().required(),
+  const schema = z.object({
+    page: z.number(),
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    per_page: Joi.number().required(),
-    total: Joi.number().required(),
+    per_page: z.number(),
+    total: z.number(),
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    total_pages: Joi.number().required(),
-    data: Joi.array().items(userSchema).required(),
-    support: supportSchema.required(),
+    total_pages: z.number(),
+    data: z.array(userSchema),
+    support: supportSchema,
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    _meta: Joi.object().optional()
+    _meta: z.record(z.string(), z.any()).optional()
   });
 
-  I.seeResponseMatchesJsonSchema(schema);
+  I.seeResponseMatchesFullJsonSchema(schema);
 });
 
 Data(users).Scenario('Create New User', async ({ I, current }) => {
@@ -50,14 +50,14 @@ Data(userIdList).Scenario('Get User by ID', async ({ I, current }) => {
     }
   });
 
-  const schema = Joi.object({
-    data: userSchema.required(),
-    support: supportSchema.required(),
+  const schema = z.object({
+    data: userSchema,
+    support: supportSchema,
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    _meta: Joi.object().optional()
+    _meta: z.record(z.string(), z.any()).optional()
   });
 
-  I.seeResponseMatchesJsonSchema(schema);
+  I.seeResponseMatchesFullJsonSchema(schema);
 });
 
 function generateUserData (): void {

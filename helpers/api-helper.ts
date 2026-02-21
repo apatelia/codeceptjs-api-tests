@@ -1,33 +1,43 @@
 import Helper from '@codeceptjs/helper';
 import { container } from 'codeceptjs';
-import Joi from 'joi';
 import assert from 'node:assert';
+import { z } from 'zod';
 
 class ApiHelper extends Helper {
   /**
-   * Asserts that the current JSON response matches the provided partial {@link https://joi.dev/} schema.
-   * Unknown/additional properties in the response are stripped before validation.
+   * Asserts that the current JSON response matches the provided partial schema.
    *
-   *
-   * ```js
-   * // This schema defines only the required fields.
-   * const requiredFieldsSchema = joi.object({
-   *   name: joi.string().required(),
-   *   age: joi.number().required()
-   * });
-   *
-   * // Assume that response is { name: 'jon', age: 30, city: 'New York' }
-   * // Below assertion will pass, even if the response contains additional 'city' property.
-   * I.seeResponseMatchesPartialJsonSchema(requiredFieldsSchema);
-   *
-   * ```
-   *
-   * @param {Joi.ObjectSchema} schema - The Joi object schema to validate the response against.
-   * @throws {ValidationError} If the response does not conform to the schema.
+   * @param {z.ZodObject} schema - The Zod schema to validate the response against.
+   * @throws {z.ZodError} If the response does not conform to the schema.
    */
-  seeResponseMatchesPartialJsonSchema (schema: Joi.ObjectSchema): void {
+  seeResponseMatchesPartialJsonSchema (schema: z.ZodObject): void {
     const response = this.helpers.JSONResponse.response;
-    Joi.assert(response.data, schema, { stripUnknown: true });
+
+    // Make all properties in schema optional, before parsing.
+    const partialSchema = schema.partial();
+    const result = partialSchema.safeParse(response.data);
+
+    if (!result.success) {
+      throw new Error(z.prettifyError(result.error).replace('Error:[Wrapped Error] ', ''));
+    }
+  }
+
+  /**
+   * Asserts that the current JSON response matches the provided schema (Zod).
+   *
+   * @param {z.ZodObject} schema - The Zod schema to validate the response against.
+   * @throws {z.ZodError} If the response does not conform to the schema.
+   */
+  seeResponseMatchesFullJsonSchema (schema: z.ZodObject): void {
+    const response = this.helpers.JSONResponse.response;
+
+    // Make all properties in schema required, before parsing.
+    const fullSchema = schema.strict();
+    const result = fullSchema.safeParse(response.data);
+
+    if (!result.success) {
+      throw new Error(z.prettifyError(result.error).replace('Error:[Wrapped Error] ', ''));
+    }
   }
 
   /**

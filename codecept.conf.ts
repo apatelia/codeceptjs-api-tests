@@ -20,6 +20,7 @@ export const config: CodeceptJS.MainConfig = {
     }
   },
   mocha: {
+    reporter: 'mocha-multi',
     reporterOptions: {
       'codeceptjs-cli-reporter': {
         stdout: '-',

@@ -1,28 +1,28 @@
-import Joi from 'joi';
+import { z } from 'zod';
 
-const starWarsResultItemSchema = Joi.object({
-  uid: Joi.string().required(),
-  name: Joi.string().required(),
-  url: Joi.string().uri().required()
+const starWarsResultItemSchema = z.object({
+  uid: z.string(),
+  name: z.string(),
+  url: z.url()
 });
 
-const socialSchema = Joi.object({
-  discord: Joi.string().uri(),
-  reddit: Joi.string().uri(),
-  github: Joi.string().uri(),
+const socialSchema = z.object({
+  discord: z.url().optional(),
+  reddit: z.url().optional(),
+  github: z.url().optional(),
 });
 
-export const schema = Joi.object({
-  message: Joi.string().required(),
+export const schema = z.object({
+  message: z.string(),
   /* eslint-disable @typescript-eslint/naming-convention */
-  total_records: Joi.number().required(),
-  total_pages: Joi.number().required(),
+  total_records: z.number(),
+  total_pages: z.number(),
   /* eslint-enable @typescript-eslint/naming-convention */
-  previous: Joi.string().allow(null),
-  next: Joi.string().allow(null),
-  results: Joi.array().items(starWarsResultItemSchema).required(),
-  social: socialSchema.required(),
-  apiVersion: Joi.string(),
-  timestamp: Joi.date().iso(),
-  support: Joi.object()
+  previous: z.string().nullable().optional(),
+  next: z.string().nullable().optional(),
+  results: z.array(starWarsResultItemSchema),
+  social: socialSchema,
+  apiVersion: z.string().optional(),
+  timestamp: z.iso.datetime().optional(),
+  support: z.record(z.string(), z.any()).optional()
 });

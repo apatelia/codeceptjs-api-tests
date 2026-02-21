@@ -1,11 +1,11 @@
-import Joi from 'joi';
+import { z } from 'zod';
 
-export const userSchema = Joi.object({
-  id: Joi.number().required(),
-  email: Joi.string().email().required(),
+export const userSchema = z.object({
+  id: z.number(),
+  email: z.email(),
   /* eslint-disable @typescript-eslint/naming-convention */
-  first_name: Joi.string().required(),
-  last_name: Joi.string().required(),
+  first_name: z.string(),
+  last_name: z.string(),
   /* eslint-enable @typescript-eslint/naming-convention */
-  avatar: Joi.string().uri().required()
+  avatar: z.url()
 });

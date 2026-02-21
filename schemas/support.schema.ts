@@ -1,6 +1,6 @@
-import Joi from 'joi';
+import { z } from 'zod';
 
-export const supportSchema = Joi.object({
-  url: Joi.string().uri().required(),
-  text: Joi.string().required()
+export const supportSchema = z.object({
+  url: z.url(),
+  text: z.string()
 });

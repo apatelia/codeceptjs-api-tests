@@ -3,11 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "test": "codeceptjs run --reporter=mocha-multi",
+    "test": "codeceptjs run",
     "test:parallel": "codeceptjs run-workers --suites 2",
-    "users": "codeceptjs run tests/users.spec.ts --reporter=mocha-multi",
-    "bookings": "codeceptjs run tests/booking.spec.ts --reporter=mocha-multi",
-    "starwars": "codeceptjs run tests/starwars.spec.ts --reporter=mocha-multi",
+    "users": "codeceptjs run tests/users.spec.ts",
+    "bookings": "codeceptjs run tests/booking.spec.ts",
+    "starwars": "codeceptjs run tests/starwars.spec.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "prepare": "husky"
@@ -34,6 +34,7 @@
     "typescript-eslint": "^8.55.0"
   },
   "dependencies": {
-    "dotenv": "^17.3.1"
+    "dotenv": "^17.3.1",
+    "zod": "^4.3.6"
   }
 }

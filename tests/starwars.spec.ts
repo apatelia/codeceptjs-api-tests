@@ -1,6 +1,6 @@
 Feature('Star Wars API').tag('@starwars');
 
-import Joi from 'joi';
+import { z } from 'zod';
 import { schema } from '../schemas/starwars-results.schema';
 
 const host = 'https://www.swapi.tech/api';
@@ -9,7 +9,7 @@ Scenario('Get People', async ({ I }) => {
   const response = await I.sendGetRequest(`${host}/people`);
   I.seeResponseCodeIs(200);
 
-  I.seeResponseMatchesJsonSchema(schema);
+  I.seeResponseMatchesFullJsonSchema(schema);
 
   const nextLink = response.data.next;
   const linkRegex = /^https:\/\/www\.swapi\.tech\/api\/[a-z]+(\?page=\d&limit=\d{1,2})?/;
@@ -23,10 +23,10 @@ Scenario('Get Planets', async ({ I }) => {
   I.seeResponseContentTypeIs('application/json');
 
   // Partial schema that only defines a part of the response structure.
-  const socialSchema = Joi.object({
-    discord: Joi.string().uri(),
-    reddit: Joi.string().uri(),
-    github: Joi.string().uri(),
+  const socialSchema = z.object({
+    discord: z.url().optional(),
+    reddit: z.url().optional(),
+    github: z.url().optional(),
   });
 
   // * Validate response against only partially defined schema
@@ -38,7 +38,7 @@ Scenario('Get Planets', async ({ I }) => {
 
   // * Validate response against full schema
   // ! This will fail if there are any unexpected fields in the response.
-  I.seeResponseMatchesJsonSchema(schema);
+  I.seeResponseMatchesFullJsonSchema(schema);
 
   // * Grab the 'next' link from the response.
   // * 'await' is used here to ensure that the value is retrieved before the next assertion.

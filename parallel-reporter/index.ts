@@ -99,10 +99,12 @@ function getFormattedErrorMessage (errorMessage: string): string {
 function getFormattedValue (valueFromError: unknown): string {
   let formattedValue = 'Not Available/Applicable';
 
-  if (typeof valueFromError === 'object' && valueFromError instanceof RegExp) {
-    formattedValue = JSON.stringify(valueFromError, null, 2);
-  } else {
-    formattedValue = valueFromError.toString().toWellFormed();
+  if (valueFromError) {
+    if (typeof valueFromError === 'object' && valueFromError instanceof RegExp) {
+      formattedValue = JSON.stringify(valueFromError, null, 2);
+    } else {
+      formattedValue = valueFromError.toString().toWellFormed();
+    }
   }
 
   return formattedValue.toWellFormed();
@@ -367,7 +369,7 @@ function parallelReport (config: ParallelReportConfig): void {
         } else {
           output.error('Parallel Report: Failed to generate report.');
           output.error('Unknown error occurred:');
-          output.error(error);
+          output.error(error?.toString());
         }
       } finally {
         // Delete thread json files
