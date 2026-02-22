@@ -33,31 +33,36 @@ export default async function generateReport (
   html += `     <h5 class="text-center text-secondary">${config.projectName}</h5>`;
   html += `     <div class="text-end text-body-tertiary">${reportGenerationTime}</div>`;
   html += '     <hr>';
-  html += '     <div class="container p-4">';
+  html += '     <div class="container pt-4 pb-4">';
   html += '       <div class="row justify-content-center mx-auto p-2 bg-primary-subtle border rounded-pill">';
   html += '         <span class="col text-center">';
   html += '           <span class="material-symbols-rounded align-bottom text-info">schedule</span>';
-  html += '           <span class="p-1 fw-bold">Duration:</span>';
+  html += '           <span class="fw-bold">Duration:</span>';
   html += `           <span>${(testRun.duration / 1000).toFixed(2)} s</span>`;
   html += '         </span>';
   html += '         <span class="col text-center">';
+  html += '           <span class="material-symbols-rounded align-bottom text-success text-opacity-75">assignment</span>';
+  html += '           <span class="fw-bold">Suites:</span>';
+  html += `           <span>${testRun.suites.length}</span>`;
+  html += '         </span>';
+  html += '         <span class="col text-center">';
   html += '           <span class="material-symbols-rounded align-bottom text-primary">experiment</span>';
-  html += '           <span class="p-1 fw-bold">Tests:</span>';
+  html += '           <span class="fw-bold">Tests:</span>';
   html += `           <span>${testRun.stats.totalTests}</span>`;
   html += '         </span>';
   html += '         <span class="col text-center">';
   html += '           <span class="material-symbols-rounded align-bottom text-success">verified</span>';
-  html += '           <span class="p-1 fw-bold">Passed:</span>';
+  html += '           <span class="fw-bold">Passed:</span>';
   html += `           <span>${testRun.stats.passedTests}</span>`;
   html += '         </span>';
   html += '         <span class="col text-center">';
   html += '           <span class="material-symbols-rounded align-bottom text-danger">dangerous</span>';
-  html += '           <span class="p-1 fw-bold">Failed:</span>';
+  html += '           <span class="fw-bold">Failed:</span>';
   html += `           <span>${testRun.stats.failedTests}</span>`;
   html += '         </span>';
   html += '         <span class="col text-center">';
   html += '           <span class="material-symbols-rounded align-bottom text-warning">hourglass_top</span>';
-  html += '           <span class="p-1 fw-bold">Skipped:</span>';
+  html += '           <span class="fw-bold">Skipped:</span>';
   html += `           <span>${testRun.stats.skippedTests}</span>`;
   html += '         </span>';
   html += '       </div>';
@@ -80,8 +85,25 @@ export default async function generateReport (
     html += '   <div class="d-grid gap-2">';
     html += `     <button class="btn btn-primary rounded-0" type="button" data-bs-toggle="collapse" data-bs-target="#collapse${suiteCount}" aria-expanded="false" aria-controls="collapse${suiteCount}">`;
     html += '       <div class="hstack gap-3">';
+    html += '         <span class="material-symbols-rounded align-bottom">assignment</span>';
     html += `         <div class="p-2">${suiteFileName}</div>`;
     html += '         <div class="p-2 ms-auto">&nbsp;</div>';
+    html += '         <div class="p-2">';
+    html += '           <span class="material-symbols-rounded align-bottom text-white">experiment</span>';
+    html += `           <span>${suite.stats.totalTests}</span>`;
+    html += '         </div>';
+    html += '         <div class="p-2">';
+    html += '           <span class="material-symbols-rounded align-bottom text-info">verified</span>';
+    html += `           <span>${suite.stats.passedTests}</span>`;
+    html += '         </div>';
+    html += '         <div class="p-2">';
+    html += '           <span class="material-symbols-rounded align-bottom text-danger-emphasis">dangerous</span>';
+    html += `           <span>${suite.stats.failedTests}</span>`;
+    html += '         </div>';
+    html += '         <div class="p-2">';
+    html += '           <span class="material-symbols-rounded align-bottom text-warning">hourglass_top</span>';
+    html += `           <span>${suite.stats.skippedTests}</span>`;
+    html += '         </div>';
     html += `         <div class="p-2">${(suiteExecutionDuration / 1000).toFixed(2)}s</div>`;
     html += '       </div>';
     html += '     </button>';
@@ -90,13 +112,22 @@ export default async function generateReport (
     html += `   <div class="collapse rounded-0 show" id="collapse${suiteCount}">`;
     html += `<div class="accordion rounded-0" id="accordion${suiteCount}">`;
 
+
+    // Before Suite Hooks.
     const beforeSuiteHooks = suite.hooks.filter((hook) => hook.type === 'BeforeSuite');
+    let beforeSuiteHooksDuration = 0;
+
+    beforeSuiteHooks.forEach((hook) => {
+      beforeSuiteHooksDuration += hook.duration;
+    });
 
     if (beforeSuiteHooks.length > 0) {
       html += '<div class="accordion-item rounded-0">'; // Start of accordion-item
       html += '<h2 class="accordion-header rounded-0">'; // Start of accordion-header
       html += `<button class="accordion-button rounded-0 collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionCollapse${accordionCollapseCount}" aria-expanded="false" aria-controls="accordionCollapse${accordionCollapseCount}">`;
-      html += '     <span class="text-wrap fw-bold p-2">Before Suite Hooks</span>';
+      html += '   <span class="material-symbols-rounded pb-2 text-secondary">anchor</span>';
+      html += '   <span class="text-wrap fw-bold p-2">Before Suite Hooks</span>';
+      html += `   <span class="text-secondary position-absolute end-0 p-5">${(beforeSuiteHooksDuration / 1000).toFixed(2)}s</span>`;
       html += '</button>';
       html += '</h2>'; // End of accordion-header
 
@@ -107,18 +138,17 @@ export default async function generateReport (
       let currentHookNumber = 1;
 
       for (const hook of beforeSuiteHooks) {
-        html += '<div class="d-flex gap-0 column-gap-1">'; // Start of container for hook
-        html += '<table class="table table-bordered table-stripped">';
-        const icon = getTestIcon(hook.status);
-        html += '<thead><tr><th>';
-        html += '       <div class="hstack">';
-        html += `         <div class="pt-2">${icon}</div>`;
-        html += `         <div>Hook #${currentHookNumber++}</div>`;
-        html += '         <div>&nbsp;</div>';
-        html += `         <div class="ms-auto">${(hook.duration / 1000).toFixed(2)}s</div>`;
-        html += '       </div>';
-        html += '</th></tr></thead>';
-        html += '<tbody>';
+        html += '<div class="pb-4">';
+        html += '<ul class="list-group">';
+        html += '<li class="list-group-item">';
+        html += ' <div class="hstack">';
+        html += getHookIcon(hook.status);
+        html += `   <div class="fw-bold">Hook #${currentHookNumber++}</div>`;
+        html += '   <div>&nbsp;</div>';
+        html += `   <div class="ms-auto text-secondary">${(hook.duration / 1000).toFixed(2)}s</div>`;
+        html += ' </div>';
+        html += '</li>';
+
         for (const step of hook.steps) {
           const stepStatusIcon = step.status === 'passed'
             ? '<span class="material-symbols-rounded align-bottom text-success">check_small</span>'
@@ -126,22 +156,29 @@ export default async function generateReport (
               ? '<span class="material-symbols-rounded align-bottom text-danger">close_small</span>'
               : '<span class="material-symbols-rounded align-bottom text-warning">exclamation</span>';
           const completeStep = `${step.actor}.${step.name} (${step.args})`;
-          html += '<tr>';
-          html += `<td><span>${stepStatusIcon}</span><span><code>${completeStep}</code></span></td>`;
-          html += '</tr>';
+          html += '<li class="list-group-item">';
+          html += ' <div class="hstack">'; // Start of horizontal stack
+          html += `   <div>${stepStatusIcon}</div>`;
+          html += `   <div><code>${completeStep}</code></div>`;
+          html += '   <div>&nbsp;</div>';
+          html += `   <div class="ms-auto text-secondary">${(step.duration / 1000).toFixed(2)}s</div>`;
+          html += '</div>'; // End of horizontal stack
+          html += '</li>';
         }
-        html += '</tbody>';
-        html += '</table>';
+
         html += '</div>'; // End of container for hook
+        html += '</ul>'; // End of list-group.
       }
 
       html += '</div>'; // End of BeforeSuite container inside accordion-body
       html += '</div>'; // End of accordion-body
       html += '</div>'; // End of accordion-item
       html += '   </div>'; // End of collapse
+
       accordionCollapseCount++;
     }
 
+    // Tests.
     const tests = suite.tests;
 
     if (tests && tests.length > 0) {
@@ -149,10 +186,8 @@ export default async function generateReport (
         html += '<div class="accordion-item rounded-0">'; // Start of accordion-item
         html += '<h2 class="accordion-header rounded-0">'; // Start of accordion-header
         html += `<button class="accordion-button rounded-0 collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionCollapse${accordionCollapseCount}" aria-expanded="false" aria-controls="accordionCollapse${accordionCollapseCount}">`;
-        const icon = getTestIcon(test.status);
-        html += `${icon}`;
+        html += getTestIcon(test.status);
         html += `     <span class="text-wrap p-2">${test.title}</span>`;
-
         html += `<span class="text-secondary position-absolute end-0 p-5">${(test.duration / 1000).toFixed(2)}s</span>`;
         html += '</button>';
         html += '</h2>'; // End of accordion-header
@@ -160,6 +195,7 @@ export default async function generateReport (
         html += `<div id="accordionCollapse${accordionCollapseCount}" class="accordion-collapse collapse" data-bs-parent="#accordion${suiteCount}">`;
         html += '<div class="accordion-body">'; // Start of accordion-body
 
+        // Test Tags.
         if (test.tags && test.tags.length > 0) {
           html += '<div class="d-flex gap-0 column-gap-1">';
           html += '<span class="p-2"><h6>Tags:</h6></span>';
@@ -174,13 +210,21 @@ export default async function generateReport (
           html += '</div>'; // End of container for tags
         }
 
+        // Before Test Hooks.
         const beforeEachHooks = test.hooks.filter((hook) => hook.type === 'Before');
 
         for (const hook of beforeEachHooks) {
-          html += '<div class="d-flex gap-0 column-gap-1">';
-          html += '<table class="table table-bordered table-stripped">';
-          html += '<thead><tr><th>Before Test Hook</th></tr></thead>';
-          html += '<tbody>';
+          html += '<div class="pb-4">';
+          html += '<ul class="list-group">';
+          html += '<li class="list-group-item">';
+          html += ' <div class="hstack">'; // Start of horizontal stack
+          html += getHookIcon(hook.status);
+          html += '   <div class="fw-bold">Before Test Hook</div>';
+          html += '   <div>&nbsp;</div>';
+          html += `   <div class="ms-auto text-secondary">${(hook.duration / 1000).toFixed(2)}s</div>`;
+          html += '</div>'; // End of horizontal stack
+          html += '</li>';
+
           for (const step of hook.steps) {
             const stepStatusIcon = step.status === 'passed'
               ? '<span class="material-symbols-rounded align-bottom text-success">check_small</span>'
@@ -188,18 +232,30 @@ export default async function generateReport (
                 ? '<span class="material-symbols-rounded align-bottom text-danger">close_small</span>'
                 : '<span class="material-symbols-rounded align-bottom text-warning">exclamation</span>';
             const completeStep = `${step.actor}.${step.name} (${step.args})`;
-            html += '<tr>';
-            html += `<td><span>${stepStatusIcon}</span><span><code>${completeStep}</code></span></td>`;
-            html += '</tr>';
+            html += '<li class="list-group-item">';
+            html += ' <div class="hstack">'; // Start of horizontal stack
+            html += `   <div>${stepStatusIcon}</div>`;
+            html += `   <div><code>${completeStep}</code></div>`;
+            html += '   <div>&nbsp;</div>';
+            html += `   <div class="ms-auto text-secondary">${(step.duration / 1000).toFixed(2)}s</div>`;
+            html += '</div>'; // End of horizontal stack
+            html += '</li>';
           }
-          html += '</tbody>';
-          html += '</table>';
+
           html += '</div>'; // End of container for hook
+          html += '</ul>'; // End of list-group.
         }
 
+        // Test Steps
         html += '<ul class="list-group">';
         html += '<li class="list-group-item">';
-        html += '<span class="fw-bold">Steps</span>';
+
+        if (test.status === 'pending') {
+          html += '<span class="fw-bold">Skip Info</span>';
+        } else {
+          html += '<span class="fw-bold">Steps</span>';
+        }
+
         html += '</li>';
 
         for (const step of test.steps) {
@@ -209,10 +265,14 @@ export default async function generateReport (
               ? '<span class="material-symbols-rounded align-bottom text-danger">close_small</span>'
               : '<span class="material-symbols-rounded align-bottom text-warning">exclamation</span>';
           const completeStep = `${step.actor}.${step.name} (${step.args})`;
-          html += `<li class="list-group-item">
-          <span>${stepStatusIcon}</span>
-            <span><code>${completeStep}</code></span>
-              </li>`;
+          html += '<li class="list-group-item">';
+          html += ' <div class="hstack">'; // Start of horizontal stack
+          html += `   <div>${stepStatusIcon}</div>`;
+          html += `   <div><code>${completeStep}</code></div>`;
+          html += '   <div>&nbsp;</div>';
+          html += `   <div class="ms-auto text-secondary">${(step.duration / 1000).toFixed(2)}s</div>`;
+          html += '</div>'; // End of horizontal stack
+          html += '</li>';
         }
 
         if (test.status === 'pending') {
@@ -227,10 +287,17 @@ export default async function generateReport (
         const afterEachHooks = test.hooks.filter((hook) => hook.type === 'After');
 
         for (const hook of afterEachHooks) {
-          html += '<div class="d-flex gap-0 column-gap-1 mt-3">';
-          html += '<table class="table table-bordered table-stripped">';
-          html += '<thead><tr><th>After Test Hook</th></tr></thead>';
-          html += '<tbody>';
+          html += '<div class="pt-4">';
+          html += '<ul class="list-group">';
+          html += '<li class="list-group-item">';
+          html += ' <div class="hstack">'; // Start of horizontal stack
+          html += getHookIcon(hook.status);
+          html += '   <div class="fw-bold">After Test Hook</div>';
+          html += '   <div>&nbsp;</div>';
+          html += `   <div class="ms-auto text-secondary">${(hook.duration / 1000).toFixed(2)}s</div>`;
+          html += ' </div>'; // End of horizontal stack
+          html += '</li>';
+
           for (const step of hook.steps) {
             const stepStatusIcon = step.status === 'passed'
               ? '<span class="material-symbols-rounded align-bottom text-success">check_small</span>'
@@ -238,15 +305,21 @@ export default async function generateReport (
                 ? '<span class="material-symbols-rounded align-bottom text-danger">close_small</span>'
                 : '<span class="material-symbols-rounded align-bottom text-warning">exclamation</span>';
             const completeStep = `${step.actor}.${step.name} (${step.args})`;
-            html += '<tr>';
-            html += `<td><span>${stepStatusIcon}</span><span><code>${completeStep}</code></span></td>`;
-            html += '</tr>';
+            html += '<li class="list-group-item">';
+            html += ' <div class="hstack">'; // Start of horizontal stack
+            html += `   <div>${stepStatusIcon}</div>`;
+            html += `   <div><code>${completeStep}</code></div>`;
+            html += '   <div>&nbsp;</div>';
+            html += `   <div class="ms-auto text-secondary">${(step.duration / 1000).toFixed(2)}s</div>`;
+            html += '</div>'; // End of horizontal stack
+            html += '</li>';
           }
-          html += '</tbody>';
-          html += '</table>';
+
           html += '</div>'; // End of container for hook
+          html += '</ul>'; // End of list-group.
         }
 
+        // Test Error.
         html += '<ul class="list-group">';
 
         if (test.error) {
@@ -302,35 +375,43 @@ export default async function generateReport (
       }
     }
 
+    // After Suite Hooks.
     const afterSuiteHooks = suite.hooks.filter((hook) => hook.type === 'AfterSuite');
+    let afterSuiteHooksDuration = 0;
+
+    afterSuiteHooks.forEach((hook) => {
+      afterSuiteHooksDuration += hook.duration;
+    });
+
 
     if (afterSuiteHooks.length > 0) {
       html += '<div class="accordion-item rounded-0">'; // Start of accordion-item
       html += '<h2 class="accordion-header rounded-0">'; // Start of accordion-header
       html += `<button class="accordion-button rounded-0 collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionCollapse${accordionCollapseCount}" aria-expanded="false" aria-controls="accordionCollapse${accordionCollapseCount}">`;
-      html += '     <span class="text-wrap fw-bold p-2">After Suite Hooks</span>';
+      html += '   <span class="material-symbols-rounded pb-2 text-secondary">anchor</span>';
+      html += '   <span class="text-wrap fw-bold p-2">After Suite Hooks</span>';
+      html += `   <span class="text-secondary position-absolute end-0 p-5">${(afterSuiteHooksDuration / 1000).toFixed(2)}s</span>`;
       html += '</button>';
       html += '</h2>'; // End of accordion-header
 
       html += `<div id="accordionCollapse${accordionCollapseCount}" class="accordion-collapse collapse" data-bs-parent="#accordion${suiteCount}">`;
       html += '<div class="accordion-body">'; // Start of accordion-body
-      html += '<div class="mt-3">'; // Start of BeforeSuite container
+      html += '<div class="mt-3">'; // Start of AfterSuite container
 
       let currentHookNumber = 1;
 
       for (const hook of afterSuiteHooks) {
-        html += '<div class="d-flex gap-0 column-gap-1">'; // Start of container for hook
-        html += '<table class="table table-bordered table-stripped">';
-        const icon = getTestIcon(hook.status);
-        html += '<thead><tr><th>';
-        html += '       <div class="hstack">';
-        html += `         <div class="pt-2">${icon}</div>`;
-        html += `         <div>Hook #${currentHookNumber++}</div>`;
-        html += '         <div>&nbsp;</div>';
-        html += `         <div class="ms-auto">${(hook.duration / 1000).toFixed(2)}s</div>`;
-        html += '       </div>';
-        html += '</th></tr></thead>';
-        html += '<tbody>';
+        html += '<div class="pb-4">';
+        html += '<ul class="list-group">';
+        html += '<li class="list-group-item">';
+        html += ' <div class="hstack">';
+        html += getHookIcon(hook.status);
+        html += `   <div class="fw-bold">Hook #${currentHookNumber++}</div>`;
+        html += '   <div>&nbsp;</div>';
+        html += `   <div class="ms-auto text-secondary">${(hook.duration / 1000).toFixed(2)}s</div>`;
+        html += ' </div>';
+        html += '</li>';
+
         for (const step of hook.steps) {
           const stepStatusIcon = step.status === 'passed'
             ? '<span class="material-symbols-rounded align-bottom text-success">check_small</span>'
@@ -338,13 +419,18 @@ export default async function generateReport (
               ? '<span class="material-symbols-rounded align-bottom text-danger">close_small</span>'
               : '<span class="material-symbols-rounded align-bottom text-warning">exclamation</span>';
           const completeStep = `${step.actor}.${step.name} (${step.args})`;
-          html += '<tr>';
-          html += `<td><span>${stepStatusIcon}</span><span><code>${completeStep}</code></span></td>`;
-          html += '</tr>';
+          html += '<li class="list-group-item">';
+          html += ' <div class="hstack">'; // Start of horizontal stack
+          html += `   <div>${stepStatusIcon}</div>`;
+          html += `   <div><code>${completeStep}</code></div>`;
+          html += '   <div>&nbsp;</div>';
+          html += `   <div class="ms-auto text-secondary">${(step.duration / 1000).toFixed(2)}s</div>`;
+          html += '</div>'; // End of horizontal stack
+          html += '</li>';
         }
-        html += '</tbody>';
-        html += '</table>';
+
         html += '</div>'; // End of container for hook
+        html += '</ul>'; // End of list-group.
       }
 
       html += '</div>'; // End of BeforeSuite container inside accordion-body
@@ -363,6 +449,7 @@ export default async function generateReport (
 
   html += '   </div>'; // End of report body container
 
+  // Failures.
   const failures = testRun.failures;
 
   if (failures && failures.length > 0) {
@@ -499,4 +586,25 @@ function getTestIcon (testStatus: string): string {
   }
 
   return icon;
+}
+
+function getHookIcon (hookStatus: string): string {
+  let hookIcon = '';
+
+  switch (hookStatus) {
+    case 'passed':
+      hookIcon = '<div class="material-symbols-rounded text-success">phishing</div>';
+      break;
+    case 'failed':
+      hookIcon = '<div class="material-symbols-rounded text-danger">phishing</div>';
+      break;
+    case 'pending':
+      hookIcon = '<div class="material-symbols-rounded text-warning">phishing</div>';
+      break;
+    default:
+      hookIcon = '<div class="material-symbols-rounded text-info">phishing</div>';
+      break;
+  }
+
+  return hookIcon;
 }

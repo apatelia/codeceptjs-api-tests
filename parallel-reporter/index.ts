@@ -299,7 +299,6 @@ function parallelReport (config: ParallelReportConfig): void {
     } else if (currentTest) {
       currentTest.steps.push(newStep);
     }
-
   });
 
   event.dispatcher.on(event.step.passed, (step) => {
