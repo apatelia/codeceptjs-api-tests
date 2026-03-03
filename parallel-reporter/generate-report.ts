@@ -159,7 +159,7 @@ export default async function generateReport (
           html += '<li class="list-group-item">';
           html += ' <div class="hstack">'; // Start of horizontal stack
           html += `   <div>${stepStatusIcon}</div>`;
-          html += `   <div><code>${completeStep}</code></div>`;
+          html += `   <div><code class="text-break">${completeStep}</code></div>`;
           html += '   <div>&nbsp;</div>';
           html += `   <div class="ms-auto text-secondary">${(step.duration / 1000).toFixed(2)}s</div>`;
           html += '</div>'; // End of horizontal stack
@@ -187,7 +187,7 @@ export default async function generateReport (
         html += '<h2 class="accordion-header rounded-0">'; // Start of accordion-header
         html += `<button class="accordion-button rounded-0 collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionCollapse${accordionCollapseCount}" aria-expanded="false" aria-controls="accordionCollapse${accordionCollapseCount}">`;
         html += getTestIcon(test.status);
-        html += `     <span class="text-wrap p-2">${test.title}</span>`;
+        html += `     <span class="text-wrap p-2 pe-5">${test.title}</span>`;
         html += `<span class="text-secondary position-absolute end-0 p-5">${(test.duration / 1000).toFixed(2)}s</span>`;
         html += '</button>';
         html += '</h2>'; // End of accordion-header
@@ -235,7 +235,7 @@ export default async function generateReport (
             html += '<li class="list-group-item">';
             html += ' <div class="hstack">'; // Start of horizontal stack
             html += `   <div>${stepStatusIcon}</div>`;
-            html += `   <div><code>${completeStep}</code></div>`;
+            html += `   <div><code class="text-break">${completeStep}</code></div>`;
             html += '   <div>&nbsp;</div>';
             html += `   <div class="ms-auto text-secondary">${(step.duration / 1000).toFixed(2)}s</div>`;
             html += '</div>'; // End of horizontal stack
@@ -268,7 +268,7 @@ export default async function generateReport (
           html += '<li class="list-group-item">';
           html += ' <div class="hstack">'; // Start of horizontal stack
           html += `   <div>${stepStatusIcon}</div>`;
-          html += `   <div><code>${completeStep}</code></div>`;
+          html += `   <div><code class="text-break">${completeStep}</code></div>`;
           html += '   <div>&nbsp;</div>';
           html += `   <div class="ms-auto text-secondary">${(step.duration / 1000).toFixed(2)}s</div>`;
           html += '</div>'; // End of horizontal stack
@@ -278,7 +278,7 @@ export default async function generateReport (
         if (test.status === 'pending') {
           html += `<li class="list-group-item">
             <span class="material-symbols-rounded align-bottom text-warning">exclamation</span>
-          <span><code>${test.skipInfo}</code></span>
+          <span><code class="text-break">${test.skipInfo}</code></span>
           </li>`;
         }
 
@@ -308,7 +308,7 @@ export default async function generateReport (
             html += '<li class="list-group-item">';
             html += ' <div class="hstack">'; // Start of horizontal stack
             html += `   <div>${stepStatusIcon}</div>`;
-            html += `   <div><code>${completeStep}</code></div>`;
+            html += `   <div><code class="text-break">${completeStep}</code></div>`;
             html += '   <div>&nbsp;</div>';
             html += `   <div class="ms-auto text-secondary">${(step.duration / 1000).toFixed(2)}s</div>`;
             html += '</div>'; // End of horizontal stack
@@ -422,7 +422,7 @@ export default async function generateReport (
           html += '<li class="list-group-item">';
           html += ' <div class="hstack">'; // Start of horizontal stack
           html += `   <div>${stepStatusIcon}</div>`;
-          html += `   <div><code>${completeStep}</code></div>`;
+          html += `   <div><code class="text-break">${completeStep}</code></div>`;
           html += '   <div>&nbsp;</div>';
           html += `   <div class="ms-auto text-secondary">${(step.duration / 1000).toFixed(2)}s</div>`;
           html += '</div>'; // End of horizontal stack
@@ -479,7 +479,7 @@ export default async function generateReport (
 
       html += '<h2 class="accordion-header rounded-0">'; // Start of accordion-header
       html += `<button class="accordion-button rounded-0 collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionCollapse${accordionCollapseCount}" aria-expanded="false" aria-controls="accordionCollapse${accordionCollapseCount}">`;
-      html += '<ul class="list-group list-group-horizontal">';
+      html += '<ul class="list-group list-group-horizontal pe-4">';
       html += `<li class="list-group-item flex-fill">${shortenedFileName}</li>`;
       html += `<li class="list-group-item flex-fill text-wrap">${error.testName}</li>`;
       html += `<li class="list-group-item flex-fill text-wrap">${error.message}</li>`;

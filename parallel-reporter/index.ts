@@ -134,13 +134,16 @@ function getStepStatus (stepStatus: string): string {
   return status;
 }
 
-function parallelReport (config: ParallelReportConfig): void {
+async function parallelReport (config: ParallelReportConfig): Promise<void> {
   const effectiveConfig: ParallelReportConfig = {
     outputDir: config?.outputDir || codeceptJsConfig.get().output,
     fileName: config?.fileName || 'parallel-report.html',
     reportTitle: config?.reportTitle || 'Test Report',
     projectName: config?.projectName || codeceptJsConfig.get().name
   };
+
+  // Delete any thread json report files from previous non-parallel test runs.
+  await deleteThreadJsonReports(effectiveConfig.outputDir);
 
   let testRun: TestRun;
   let totalTests = 0;
@@ -371,16 +374,20 @@ function parallelReport (config: ParallelReportConfig): void {
           output.error(error?.toString());
         }
       } finally {
-        // Delete thread json files
-        const threadFiles = readdirSync(effectiveConfig.outputDir).filter(file => file.startsWith('thread_report') && file.endsWith('.json'));
-        for (const file of threadFiles) {
-          unlinkSync(path.join(effectiveConfig.outputDir, file));
-        }
+        // Delete thread json report files
+        await deleteThreadJsonReports(effectiveConfig.outputDir);
       }
     } else {
       output.error('No tests found. No report was generated.');
     }
   });
+}
+
+async function deleteThreadJsonReports (reportDir: string): Promise<void> {
+  const threadFiles = readdirSync(reportDir).filter(file => file.startsWith('thread_report') && file.endsWith('.json'));
+  for (const file of threadFiles) {
+    unlinkSync(path.join(reportDir, file));
+  }
 }
 
 module.exports = parallelReport;
