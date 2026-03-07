@@ -31,14 +31,15 @@ export default async function generateReport (
   html += '   <div class="container justify-content-center">';
   html += `     <h1 class="text-center m-2">${config.reportTitle}</h1>`;
   html += `     <h5 class="text-center text-secondary">${config.projectName}</h5>`;
-  html += `     <div class="text-end text-body-tertiary">${reportGenerationTime}</div>`;
+  html += `     <div class="text-center text-body-tertiary">${reportGenerationTime}</div>`;
+  html += `     <div class="text-end text-body-secondary">Git commit: <span class="text-body-tertiary">${config.commitHash}</span></div>`;
   html += '     <hr>';
   html += '     <div class="container pt-4 pb-4">';
   html += '       <div class="row justify-content-center mx-auto p-2 bg-primary-subtle border rounded-pill">';
   html += '         <span class="col text-center">';
   html += '           <span class="material-symbols-rounded align-bottom text-info">schedule</span>';
   html += '           <span class="fw-bold">Duration:</span>';
-  html += `           <span>${(testRun.duration / 1000).toFixed(2)} s</span>`;
+  html += `           <span>${(testRun.duration / 1000).toFixed(2)}s</span>`;
   html += '         </span>';
   html += '         <span class="col text-center">';
   html += '           <span class="material-symbols-rounded align-bottom text-success text-opacity-75">assignment</span>';

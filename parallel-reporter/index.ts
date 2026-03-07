@@ -1,4 +1,5 @@
 import { config as codeceptJsConfig, event, output } from 'codeceptjs';
+import { execSync } from 'node:child_process';
 import { readdirSync, unlinkSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { threadId } from 'node:worker_threads';
@@ -17,6 +18,7 @@ export interface ParallelReportConfig {
   fileName?: string;
   reportTitle?: string;
   projectName?: string;
+  commitHash: string;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -139,7 +141,8 @@ async function parallelReport (config: ParallelReportConfig): Promise<void> {
     outputDir: config?.outputDir || codeceptJsConfig.get().output,
     fileName: config?.fileName || 'parallel-report.html',
     reportTitle: config?.reportTitle || 'Test Report',
-    projectName: config?.projectName || codeceptJsConfig.get().name
+    projectName: config?.projectName || codeceptJsConfig.get().name,
+    commitHash: getLatestGitCommitHash(),
   };
 
   // Delete any thread json report files from previous non-parallel test runs.
@@ -388,6 +391,24 @@ async function deleteThreadJsonReports (reportDir: string): Promise<void> {
   for (const file of threadFiles) {
     unlinkSync(path.join(reportDir, file));
   }
+}
+
+function getLatestGitCommitHash (): string {
+  let commitHash = 'Unknown';
+
+  try {
+    commitHash = execSync('git rev-parse --short HEAD').toString().trim();
+  } catch (error) {
+    output.error('Failed to get latest git commit hash.');
+
+    if (error instanceof Error) {
+      output.error(error.message);
+    } else {
+      output.error(error?.toString());
+    }
+  }
+
+  return commitHash;
 }
 
 module.exports = parallelReport;

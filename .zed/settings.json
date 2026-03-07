@@ -4,7 +4,6 @@
   "ensure_final_newline_on_save": true,
   "show_completion_documentation": true,
   "format_on_save": "on",
-  "lsp_highlight_debounce": 10,
   "lsp": {
     "vtsls": {
       "settings": {
