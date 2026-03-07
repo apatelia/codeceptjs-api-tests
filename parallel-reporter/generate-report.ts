@@ -39,7 +39,7 @@ export default async function generateReport (
   html += '         <span class="col text-center">';
   html += '           <span class="material-symbols-rounded align-bottom text-info">schedule</span>';
   html += '           <span class="fw-bold">Duration:</span>';
-  html += `           <span>${(testRun.duration / 1000).toFixed(2)}s</span>`;
+  html += `           <span>${getHumanReadableDuration(testRun.duration)}</span>`;
   html += '         </span>';
   html += '         <span class="col text-center">';
   html += '           <span class="material-symbols-rounded align-bottom text-success text-opacity-75">assignment</span>';
@@ -105,7 +105,7 @@ export default async function generateReport (
     html += '           <span class="material-symbols-rounded align-bottom text-warning">hourglass_top</span>';
     html += `           <span>${suite.stats.skippedTests}</span>`;
     html += '         </div>';
-    html += `         <div class="p-2">${(suiteExecutionDuration / 1000).toFixed(2)}s</div>`;
+    html += `         <div class="p-2">${getHumanReadableDuration(suiteExecutionDuration)}</div>`;
     html += '       </div>';
     html += '     </button>';
     html += '   </div>';
@@ -128,7 +128,7 @@ export default async function generateReport (
       html += `<button class="accordion-button rounded-0 collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionCollapse${accordionCollapseCount}" aria-expanded="false" aria-controls="accordionCollapse${accordionCollapseCount}">`;
       html += '   <span class="material-symbols-rounded pb-2 text-secondary">anchor</span>';
       html += '   <span class="text-wrap fw-bold p-2">Before Suite Hooks</span>';
-      html += `   <span class="text-secondary position-absolute end-0 p-5">${(beforeSuiteHooksDuration / 1000).toFixed(2)}s</span>`;
+      html += `   <span class="text-secondary position-absolute end-0 p-5">${getHumanReadableDuration(beforeSuiteHooksDuration)}</span>`;
       html += '</button>';
       html += '</h2>'; // End of accordion-header
 
@@ -146,7 +146,7 @@ export default async function generateReport (
         html += getHookIcon(hook.status);
         html += `   <div class="fw-bold">Hook #${currentHookNumber++}</div>`;
         html += '   <div>&nbsp;</div>';
-        html += `   <div class="ms-auto text-secondary">${(hook.duration / 1000).toFixed(2)}s</div>`;
+        html += `   <div class="ms-auto text-secondary">${getHumanReadableDuration(hook.duration)}</div>`;
         html += ' </div>';
         html += '</li>';
 
@@ -162,7 +162,7 @@ export default async function generateReport (
           html += `   <div>${stepStatusIcon}</div>`;
           html += `   <div><code class="text-break">${completeStep}</code></div>`;
           html += '   <div>&nbsp;</div>';
-          html += `   <div class="ms-auto text-secondary">${(step.duration / 1000).toFixed(2)}s</div>`;
+          html += `   <div class="ms-auto text-secondary">${getHumanReadableDuration(step.duration)}</div>`;
           html += '</div>'; // End of horizontal stack
           html += '</li>';
         }
@@ -189,7 +189,7 @@ export default async function generateReport (
         html += `<button class="accordion-button rounded-0 collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionCollapse${accordionCollapseCount}" aria-expanded="false" aria-controls="accordionCollapse${accordionCollapseCount}">`;
         html += getTestIcon(test.status);
         html += `     <span class="text-wrap p-2 pe-5">${test.title}</span>`;
-        html += `<span class="text-secondary position-absolute end-0 p-5">${(test.duration / 1000).toFixed(2)}s</span>`;
+        html += `<span class="text-secondary position-absolute end-0 p-5">${getHumanReadableDuration(test.duration)}</span>`;
         html += '</button>';
         html += '</h2>'; // End of accordion-header
 
@@ -222,7 +222,7 @@ export default async function generateReport (
           html += getHookIcon(hook.status);
           html += '   <div class="fw-bold">Before Test Hook</div>';
           html += '   <div>&nbsp;</div>';
-          html += `   <div class="ms-auto text-secondary">${(hook.duration / 1000).toFixed(2)}s</div>`;
+          html += `   <div class="ms-auto text-secondary">${getHumanReadableDuration(hook.duration)}</div>`;
           html += '</div>'; // End of horizontal stack
           html += '</li>';
 
@@ -238,7 +238,7 @@ export default async function generateReport (
             html += `   <div>${stepStatusIcon}</div>`;
             html += `   <div><code class="text-break">${completeStep}</code></div>`;
             html += '   <div>&nbsp;</div>';
-            html += `   <div class="ms-auto text-secondary">${(step.duration / 1000).toFixed(2)}s</div>`;
+            html += `   <div class="ms-auto text-secondary">${getHumanReadableDuration(step.duration)}</div>`;
             html += '</div>'; // End of horizontal stack
             html += '</li>';
           }
@@ -271,7 +271,7 @@ export default async function generateReport (
           html += `   <div>${stepStatusIcon}</div>`;
           html += `   <div><code class="text-break">${completeStep}</code></div>`;
           html += '   <div>&nbsp;</div>';
-          html += `   <div class="ms-auto text-secondary">${(step.duration / 1000).toFixed(2)}s</div>`;
+          html += `   <div class="ms-auto text-secondary">${getHumanReadableDuration(step.duration)}</div>`;
           html += '</div>'; // End of horizontal stack
           html += '</li>';
         }
@@ -295,7 +295,7 @@ export default async function generateReport (
           html += getHookIcon(hook.status);
           html += '   <div class="fw-bold">After Test Hook</div>';
           html += '   <div>&nbsp;</div>';
-          html += `   <div class="ms-auto text-secondary">${(hook.duration / 1000).toFixed(2)}s</div>`;
+          html += `   <div class="ms-auto text-secondary">${getHumanReadableDuration(hook.duration)}</div>`;
           html += ' </div>'; // End of horizontal stack
           html += '</li>';
 
@@ -311,7 +311,7 @@ export default async function generateReport (
             html += `   <div>${stepStatusIcon}</div>`;
             html += `   <div><code class="text-break">${completeStep}</code></div>`;
             html += '   <div>&nbsp;</div>';
-            html += `   <div class="ms-auto text-secondary">${(step.duration / 1000).toFixed(2)}s</div>`;
+            html += `   <div class="ms-auto text-secondary">${getHumanReadableDuration(step.duration)}</div>`;
             html += '</div>'; // End of horizontal stack
             html += '</li>';
           }
@@ -391,7 +391,7 @@ export default async function generateReport (
       html += `<button class="accordion-button rounded-0 collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionCollapse${accordionCollapseCount}" aria-expanded="false" aria-controls="accordionCollapse${accordionCollapseCount}">`;
       html += '   <span class="material-symbols-rounded pb-2 text-secondary">anchor</span>';
       html += '   <span class="text-wrap fw-bold p-2">After Suite Hooks</span>';
-      html += `   <span class="text-secondary position-absolute end-0 p-5">${(afterSuiteHooksDuration / 1000).toFixed(2)}s</span>`;
+      html += `   <span class="text-secondary position-absolute end-0 p-5">${getHumanReadableDuration(afterSuiteHooksDuration)}</span>`;
       html += '</button>';
       html += '</h2>'; // End of accordion-header
 
@@ -409,7 +409,7 @@ export default async function generateReport (
         html += getHookIcon(hook.status);
         html += `   <div class="fw-bold">Hook #${currentHookNumber++}</div>`;
         html += '   <div>&nbsp;</div>';
-        html += `   <div class="ms-auto text-secondary">${(hook.duration / 1000).toFixed(2)}s</div>`;
+        html += `   <div class="ms-auto text-secondary">${getHumanReadableDuration(hook.duration)}</div>`;
         html += ' </div>';
         html += '</li>';
 
@@ -425,7 +425,7 @@ export default async function generateReport (
           html += `   <div>${stepStatusIcon}</div>`;
           html += `   <div><code class="text-break">${completeStep}</code></div>`;
           html += '   <div>&nbsp;</div>';
-          html += `   <div class="ms-auto text-secondary">${(step.duration / 1000).toFixed(2)}s</div>`;
+          html += `   <div class="ms-auto text-secondary">${getHumanReadableDuration(step.duration)}</div>`;
           html += '</div>'; // End of horizontal stack
           html += '</li>';
         }
@@ -608,4 +608,21 @@ function getHookIcon (hookStatus: string): string {
   }
 
   return hookIcon;
+}
+
+function getHumanReadableDuration (duration: number): string {
+  const hours = Math.floor(duration / (3600 * 1000));
+  const seconds = Math.floor(duration / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+
+  if (hours > 0) {
+    return `${hours}h ${minutes}m ${remainingSeconds}s`;
+  }
+
+  if (minutes > 0) {
+    return `${minutes}m ${remainingSeconds}s`;
+  }
+
+  return `${(duration / 1000).toFixed(2)}s`;
 }
