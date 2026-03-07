@@ -3,6 +3,7 @@ import eslintJs from "@eslint/js";
 import stylistic from "@stylistic/eslint-plugin";
 import checkFile from "eslint-plugin-check-file";
 import unusedImports from "eslint-plugin-unused-imports";
+import eslintPluginZod from "eslint-plugin-zod";
 import globals from "globals";
 import eslintTs from "typescript-eslint";
 
@@ -30,6 +31,7 @@ export default [
   cSpellConfigs.recommended,
   eslintJs.configs.recommended,
   ...eslintTs.configs.recommended,
+  eslintPluginZod.configs.recommended,
   {
     plugins: {
       "@stylistic": stylistic,

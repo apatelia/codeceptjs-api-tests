@@ -387,9 +387,21 @@ async function parallelReport (config: ParallelReportConfig): Promise<void> {
 }
 
 async function deleteThreadJsonReports (reportDir: string): Promise<void> {
-  const threadFiles = readdirSync(reportDir).filter(file => file.startsWith('thread_report') && file.endsWith('.json'));
+  const threadFiles = readdirSync(reportDir)
+    .filter(file => file.startsWith('thread_report') && file.endsWith('.json'));
+
   for (const file of threadFiles) {
-    unlinkSync(path.join(reportDir, file));
+    try {
+      unlinkSync(path.join(reportDir, file));
+    } catch (error) {
+      output.error(`Failed to delete thread json report file: ${file}`);
+
+      if (error instanceof Error) {
+        output.error('Error:'.concat(error.message));
+      } else {
+        output.error('Error:'.concat(error?.toString()));
+      }
+    }
   }
 }
 
@@ -402,9 +414,9 @@ function getLatestGitCommitHash (): string {
     output.error('Failed to get latest git commit hash.');
 
     if (error instanceof Error) {
-      output.error(error.message);
+      output.error('Error:'.concat(error.message));
     } else {
-      output.error(error?.toString());
+      output.error('Error:'.concat(error?.toString()));
     }
   }
 

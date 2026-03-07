@@ -1,7 +1,8 @@
 Feature('Users API').tag('@users');
 
 import { faker } from '@faker-js/faker';
-import { z } from 'zod';
+import * as z from 'zod';
+import { metaSchema } from '../schemas/meta.schema';
 import { supportSchema } from '../schemas/support.schema';
 import { userSchema } from '../schemas/user.schema';
 
@@ -17,7 +18,7 @@ Scenario('List Users', async ({ I }) => {
   await I.sendGetRequest('/api/users?page=2', apiKey);
   I.seeResponseCodeIs(200);
 
-  const schema = z.object({
+  const userListSchema = z.object({
     page: z.number(),
     // eslint-disable-next-line @typescript-eslint/naming-convention
     per_page: z.number(),
@@ -27,10 +28,10 @@ Scenario('List Users', async ({ I }) => {
     data: z.array(userSchema),
     support: supportSchema,
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    _meta: z.record(z.string(), z.any()).optional()
+    _meta: metaSchema.optional()
   });
 
-  I.seeResponseMatchesFullJsonSchema(schema);
+  I.seeResponseMatchesFullJsonSchema(userListSchema);
 });
 
 Data(users).Scenario('Create New User', async ({ I, current }) => {
@@ -50,14 +51,14 @@ Data(userIdList).Scenario('Get User by ID', async ({ I, current }) => {
     }
   });
 
-  const schema = z.object({
+  const singleUserSchema = z.object({
     data: userSchema,
     support: supportSchema,
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    _meta: z.record(z.string(), z.any()).optional()
+    _meta: metaSchema.optional()
   });
 
-  I.seeResponseMatchesFullJsonSchema(schema);
+  I.seeResponseMatchesFullJsonSchema(singleUserSchema);
 });
 
 function generateUserData (): void {

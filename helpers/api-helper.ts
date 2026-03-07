@@ -1,7 +1,7 @@
 import Helper from '@codeceptjs/helper';
 import { container } from 'codeceptjs';
 import assert from 'node:assert';
-import { z } from 'zod';
+import * as z from 'zod';
 
 class ApiHelper extends Helper {
   /**

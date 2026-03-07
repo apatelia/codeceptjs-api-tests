@@ -1,7 +1,7 @@
 Feature('Star Wars API').tag('@starwars');
 
-import { z } from 'zod';
-import { schema } from '../schemas/starwars-results.schema';
+import * as z from 'zod';
+import { starWarsSchema } from '../schemas/starwars-results.schema';
 
 const host = 'https://www.swapi.tech/api';
 
@@ -9,7 +9,7 @@ Scenario('Get People', async ({ I }) => {
   const response = await I.sendGetRequest(`${host}/people`);
   I.seeResponseCodeIs(200);
 
-  I.seeResponseMatchesFullJsonSchema(schema);
+  I.seeResponseMatchesFullJsonSchema(starWarsSchema);
 
   const nextLink = response.data.next;
   const linkRegex = /^https:\/\/www\.swapi\.tech\/api\/[a-z]+(\?page=\d&limit=\d{1,2})?/;
@@ -34,11 +34,11 @@ Scenario('Get Planets', async ({ I }) => {
 
   // * Validate response against full schema using the PartialJsonSchemaValidator Helper
   // ! Any unexpected fields in the response will be ignored.
-  I.seeResponseMatchesPartialJsonSchema(schema);
+  I.seeResponseMatchesPartialJsonSchema(starWarsSchema);
 
   // * Validate response against full schema
   // ! This will fail if there are any unexpected fields in the response.
-  I.seeResponseMatchesFullJsonSchema(schema);
+  I.seeResponseMatchesFullJsonSchema(starWarsSchema);
 
   // * Grab the 'next' link from the response.
   // * 'await' is used here to ensure that the value is retrieved before the next assertion.
