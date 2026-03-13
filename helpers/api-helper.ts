@@ -7,15 +7,28 @@ class ApiHelper extends Helper {
   /**
    * Asserts that the current JSON response matches the provided partial schema.
    *
-   * @param {z.ZodObject} schema - The Zod schema to validate the response against.
+   * @param {z.ZodObject | z.ZodArray} schema - The Zod schema to validate the response against.
    * @throws {z.ZodError} If the response does not conform to the schema.
    */
-  seeResponseMatchesPartialJsonSchema (schema: z.ZodObject): void {
+  seeResponseMatchesPartialJsonSchema (schema: z.ZodObject | z.ZodArray): void {
+    if (!schema) {
+      throw new Error('Schema must be provided. Check the test implementation for correct schema name.');
+    }
+
     const response = this.helpers.JSONResponse.response;
+    let fullSchema: z.ZodObject | z.ZodArray;
 
     // Make all properties in schema optional, before parsing.
-    const partialSchema = schema.partial();
-    const result = partialSchema.safeParse(response.data);
+    if (schema instanceof z.ZodArray) {
+      const propertySchema = schema.unwrap();
+      fullSchema = propertySchema instanceof z.ZodObject
+        ? z.array(propertySchema.partial())
+        : schema;
+    } else {
+      fullSchema = schema.partial();
+    }
+
+    const result = fullSchema.safeParse(response.data);
 
     if (!result.success) {
       throw new Error(z.prettifyError(result.error).replace('Error:[Wrapped Error] ', ''));
@@ -25,14 +38,27 @@ class ApiHelper extends Helper {
   /**
    * Asserts that the current JSON response matches the provided schema (Zod).
    *
-   * @param {z.ZodObject} schema - The Zod schema to validate the response against.
+   * @param {z.ZodObject | z.ZodArray} schema - The Zod schema to validate the response against.
    * @throws {z.ZodError} If the response does not conform to the schema.
    */
-  seeResponseMatchesFullJsonSchema (schema: z.ZodObject): void {
+  seeResponseMatchesFullJsonSchema (schema: z.ZodObject | z.ZodArray): void {
+    if (!schema) {
+      throw new Error('Schema must be provided. Check the test implementation for correct schema name.');
+    }
+
     const response = this.helpers.JSONResponse.response;
+    let fullSchema: z.ZodObject | z.ZodArray;
 
     // Make all properties in schema required, before parsing.
-    const fullSchema = schema.strict();
+    if (schema instanceof z.ZodArray) {
+      const propertySchema = schema.unwrap();
+      fullSchema = propertySchema instanceof z.ZodObject
+        ? z.array(propertySchema.strict())
+        : schema;
+    } else {
+      fullSchema = schema.strict();
+    }
+
     const result = fullSchema.safeParse(response.data);
 
     if (!result.success) {

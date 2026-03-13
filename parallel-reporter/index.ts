@@ -32,8 +32,11 @@ function getStepArguments (step: any): string {
     const argumentIsNumber = (typeof argument === 'number');
     const argumentIsBoolean = (typeof argument === 'boolean');
 
-    let wellFormatted = '';
-    if (argumentIsAnObject && !argumentIsRegex) {
+    let wellFormatted: string;
+
+    if (!argument) {
+      wellFormatted = '';
+    } else if (argumentIsAnObject && !argumentIsRegex) {
       wellFormatted = (argument.length < 20)
         ? JSON.stringify(argument, null, 2)
         : '{ object }';
@@ -113,7 +116,7 @@ function getFormattedValue (valueFromError: unknown): string {
 }
 
 function getStepStatus (stepStatus: string): string {
-  let status = '';
+  let status: string;
 
   switch (stepStatus) {
     case 'failed':

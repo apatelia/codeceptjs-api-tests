@@ -569,7 +569,7 @@ export default async function generateReport (
 }
 
 function getTestIcon (testStatus: string): string {
-  let icon = '';
+  let icon: string;
 
   switch (testStatus) {
     case 'passed':
@@ -590,7 +590,7 @@ function getTestIcon (testStatus: string): string {
 }
 
 function getHookIcon (hookStatus: string): string {
-  let hookIcon = '';
+  let hookIcon: string;
 
   switch (hookStatus) {
     case 'passed':
