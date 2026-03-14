@@ -10,6 +10,7 @@
     "starwars": "codeceptjs run tests/starwars.spec.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "clean": "rimraf reports",
     "prepare": "husky"
   },
   "devDependencies": {
@@ -30,6 +31,7 @@
     "husky": "^9.1.7",
     "mocha-multi": "^1.1.7",
     "mochawesome": "^7.1.4",
+    "rimraf": "^6.1.3",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.57.0"

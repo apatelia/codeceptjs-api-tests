@@ -1,6 +1,6 @@
 import { config as codeceptJsConfig, event, output } from 'codeceptjs';
 import { execSync } from 'node:child_process';
-import { readdirSync, unlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, unlinkSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { threadId } from 'node:worker_threads';
 import generateReport from './generate-report';
@@ -390,6 +390,11 @@ async function parallelReport (config: ParallelReportConfig): Promise<void> {
 }
 
 async function deleteThreadJsonReports (reportDir: string): Promise<void> {
+  if (!existsSync(reportDir)) {
+    output.debug(`Parallel Report: Thread json report directory does not exist: ${reportDir}`);
+    return;
+  }
+
   const threadFiles = readdirSync(reportDir)
     .filter(file => file.startsWith('thread_report') && file.endsWith('.json'));
 
