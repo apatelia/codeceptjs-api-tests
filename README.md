@@ -1,4 +1,4 @@
-## About
+# About
 
 This repository contains an automated test framework example for API Testing.
 
@@ -6,8 +6,8 @@ The framework uses [codeceptjs](https://codecept.io/).
 
 The framework also utilizes following assertion libraries.
 
-- [ joi ](https://joi.dev/)
-- [ codeceptjs-chai ](https://www.npmjs.com/package/codeceptjs-chai)
+- [joi](https://joi.dev/)
+- [codeceptjs-chai](https://www.npmjs.com/package/codeceptjs-chai)
 
 ## How to run tests
 
@@ -66,6 +66,5 @@ You can configure this `Parallel Test Report` using its configuration options in
 ```
 
 All four configuration options listed above are optional. If they are not provided in config file, their respective default values are considered while generating the report. However, it is recommended that you provide values for at least `projectName` property. Refer to the screenshot below to know where and how it is displayed in the report.
-<br />
-<br />
+
 ![Parallel Test Report](./docs/screenshots/image.png)

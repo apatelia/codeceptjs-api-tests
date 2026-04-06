@@ -87,7 +87,8 @@
         "json-language-server",
         "!prettier",
         "cspell",
-        "package-version-server"
+        "package-version-server",
+        "npm-package-json-checker-lsp"
       ]
     },
     "JSONC": {
